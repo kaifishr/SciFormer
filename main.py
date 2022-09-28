@@ -2,33 +2,11 @@
 """
 import json
 
-from src.modules.model import ConvNet, DenseNet
+from src.modules.model import ImageTransformer
 from src.data.dataloader import get_dataloader
 from src.config.config import init_config
 from src.train.train import train
 from src.utils.tools import set_random_seed
-
-
-def experiment_imagewoof():
-
-    # Get configuration file
-    config = init_config(file_path="config.yml")
-    config["data"]["dataset"] = "imagewoof"
-
-    # Seed random number generator
-    set_random_seed(seed=config["experiment"]["random_seed"])
-
-    # Get dataloader
-    dataloader = get_dataloader(config=config)
-    print(json.dumps(config, indent=4))
-
-    # Get the model
-    model = ConvNet(config=config)
-    model.to(config["device"])
-
-    train(model=model, dataloader=dataloader, config=config)
-
-    print("Experiment finished.")
 
 
 def experiment_cifar10():
@@ -45,7 +23,7 @@ def experiment_cifar10():
     print(json.dumps(config, indent=4))
 
     # Get the model
-    model = DenseNet(config=config)
+    model = ImageTransformer(config=config)
     model.to(config["device"])
 
     train(model=model, dataloader=dataloader, config=config)
@@ -54,7 +32,6 @@ def experiment_cifar10():
 
 
 def main():
-    experiment_imagewoof()
     experiment_cifar10()
 
 

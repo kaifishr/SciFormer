@@ -78,8 +78,12 @@ def get_dataloader(config: dict) -> tuple[DataLoader, DataLoader]:
     elif dataset == "cifar10":
 
         cifar10 = torchvision.datasets.CIFAR10(root="./data", train=True, download=True)
-        mean = np.mean(np.array(cifar10.data / 255.0), axis=(0, 1, 2))      # [0.49139968 0.48215841 0.44653091]
-        std = np.std(np.array(cifar10.data / 255.0), axis=(0, 1, 2))        # [0.24703223 0.24348513 0.26158784]
+        mean = np.mean(
+            np.array(cifar10.data / 255.0), axis=(0, 1, 2)
+        )  # [0.49139968 0.48215841 0.44653091]
+        std = np.std(
+            np.array(cifar10.data / 255.0), axis=(0, 1, 2)
+        )  # [0.24703223 0.24348513 0.26158784]
 
         transform_train = transforms.Compose(
             [
