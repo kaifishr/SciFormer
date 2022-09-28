@@ -6,20 +6,21 @@
 experiment:
   tag: "blafoo"
   random_seed: 0
+  device: "gpu"
 
 ##########
 ## Data ##
 ##########
 # cifar10, imagewoof
 data:
-  dataset: "imagewoof"
+  dataset: "cifar10"
   num_workers: 4
 
 ############
 # Training #
 ############
 train:
-  n_epochs: 1
+  n_epochs: 20
   learning_rate: 1.0e-3
   weight_decay: 0.0
   lr_step_size: 50

@@ -24,7 +24,8 @@ def init_config(file_path: str) -> dict:
         Path(directory).mkdir(parents=True, exist_ok=True)
 
     # Check for accelerator
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    if config["experiment"]["device"] == "gpu":
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     config["device"] = str(device)
 
     return config
