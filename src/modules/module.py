@@ -43,9 +43,6 @@ class ImageToSequence(nn.Module):
             in_features=in_features, out_features=out_features, bias=False
         )
 
-        self.layer_norm_1 = nn.LayerNorm(in_features)
-        self.layer_norm_2 = nn.LayerNorm(out_features)
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method.
 
@@ -60,9 +57,7 @@ class ImageToSequence(nn.Module):
         """
         x = self.conv(x)
         x = torch.flatten(x, start_dim=1)
-        x = self.layer_norm_1(x)
         x = self.linear(x)
-        x = self.layer_norm_2(x)
         x = x.view(-1, self.sequence_size, self.embedding_dim)
         return x
 

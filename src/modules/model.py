@@ -62,12 +62,7 @@ class ImageTransformer(nn.Module):
     def _init_weights(self, module):
         """Initiaializes weights for all modules of ImageTransformer."""
         if isinstance(module, (nn.Linear, nn.Conv2d)):
-            #torch.nn.init.xavier_normal_(module.weight)
-            #torch.nn.init.xavier_uniform_(module.weight)
-            #torch.nn.init.normal_(module.weight, mean=0.0, std=0.01)
-            #torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
-            #torch.nn.init.normal_(module.weight, mean=0.0, std=0.04)
-            torch.nn.init.normal_(module.weight, mean=0.0, std=0.08)
+            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
             if module.bias is not None:
                 torch.nn.init.zeros_(module.bias)
         elif isinstance(module, nn.LayerNorm):
