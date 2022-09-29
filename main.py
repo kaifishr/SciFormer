@@ -1,5 +1,3 @@
-"""Neural network testbed for rapid testing of ideas.
-"""
 import json
 
 from src.modules.model import ImageTransformer
