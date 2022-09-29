@@ -1,9 +1,7 @@
 """Collection of custom neural networks.
 
 """
-from imp import init_frozen
 from math import prod
-from turtle import forward
 
 import torch
 import torch.nn as nn
@@ -28,8 +26,8 @@ class ImageTransformer(nn.Module):
         self.n_dims_out = config["n_classes"]
 
         # Parameters for multi-head self-attention.
-        self.n_heads = 8
-        self.head_dim = 32
+        self.n_heads = 32
+        self.head_dim = 8
         self.sequence_size = 16
         self.embedding_dim = self.n_heads * self.head_dim
         self.n_blocks = 4
@@ -59,13 +57,17 @@ class ImageTransformer(nn.Module):
         )
 
         self._count_model_parameteres()
-
-        # Initialize model weights here. See mingpt.
-        # self.apply(self._init_weights)
+        self.apply(self._init_weights)
 
     def _init_weights(self, module):
         """Initiaializes weights for all modules of ImageTransformer."""
-
+        if isinstance(module, (nn.Linear, nn.Conv2d)):
+            torch.nn.init.xavier_normal_(module.weight)
+            if module.bias is not None:
+                torch.nn.init.zeros_(module.bias)
+        elif isinstance(module, nn.LayerNorm):
+            torch.nn.init.zeros_(module.bias)
+            torch.nn.init.ones_(module.weight)
 
     def _count_model_parameteres(self) -> None:
         """Computes number of model parameters."""

@@ -1,7 +1,5 @@
 """Modules of ImageTransformer.
 """
-from grpc import insecure_channel
-from requests import patch
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -21,65 +19,16 @@ class ImageToSequence(nn.Module):
         self.n_dims_in = n_dims_in
         self.sequence_size = sequence_size
         self.embedding_dim = embedding_dim
-        
-        self.linear = nn.Linear(
-            in_features=n_dims_in, 
-            out_features=self.sequence_size * self.embedding_dim, 
-            bias=False
-        )
-
-        self._weights_init()
-
-    def _weights_init(self) -> None:
-        for module in self.modules():
-            if isinstance(module, nn.Linear):
-                torch.nn.init.xavier_uniform_(module.weight.data)
-                if module.bias is not None:
-                    torch.nn.init.zeros_(module.bias.data)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Forward method.
-
-        We don't need an extra embedding or positional encoding when  we
-        work with image data.
-
-        Images are of size (batch_size, num_channels * width * height) and
-        are transformed to size (batch_size, sequence_size * embedding_dim)
-
-        Returns:
-            Linear transformation.
-        """
-        batch_size = x.shape[0]
-        x = torch.flatten(x, start_dim=1)
-        x = self.linear(x)
-        x = x.view(batch_size, self.sequence_size, self.embedding_dim)
-        return x
-
-class ImageToSequence(nn.Module):
-    """Transforms image into sequence for self-attention module.
-
-    Attributes:
-        sequence_length:
-        embedding_dim:
-    """
-
-    def __init__(self, n_dims_in: int, sequence_size: int, embedding_dim: int) -> None:
-        """Initializes ImageToSequence module."""
-        super().__init__()
-        self.n_dims_in = n_dims_in
-        self.sequence_size = sequence_size
-        self.embedding_dim = embedding_dim
 
         image_dim = 3
         image_height = 32
         image_width = 32
 
         in_channels = image_dim
-        out_channels = 1
+        out_channels = 3
         patch_size = 2
 
         assert image_height % patch_size == 0
-
 
         self.conv = nn.Conv2d(
             in_channels=in_channels,
@@ -87,10 +36,6 @@ class ImageToSequence(nn.Module):
             kernel_size=patch_size,
             stride=patch_size,
         )
-
-        # self.pool = nn.AdaptiveAvgPool2d(
-        #     output_size=1
-        # )
 
         in_features = out_channels * (image_height // patch_size) * (image_width // patch_size)
         out_features = self.sequence_size * self.embedding_dim
@@ -98,19 +43,6 @@ class ImageToSequence(nn.Module):
             in_features=in_features, out_features=out_features, bias=False
         )
 
-        self._weights_init()
-
-    def _weights_init(self) -> None:
-        for module in self.modules():
-            if isinstance(module, nn.Linear):
-                torch.nn.init.xavier_uniform_(module.weight.data)
-                if module.bias is not None:
-                    torch.nn.init.zeros_(module.bias.data)
-            if isinstance(module, nn.Conv2d):
-                torch.nn.init.xavier_uniform_(module.weight.data)
-                if module.bias is not None:
-                    torch.nn.init.zeros_(module.bias.data)
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method.
 
@@ -126,79 +58,6 @@ class ImageToSequence(nn.Module):
         x = self.conv(x)
         x = torch.flatten(x, start_dim=1)
         x = self.linear(x)
-        x = x.view(-1, self.sequence_size, self.embedding_dim)
-        return x
-
-
-class ImageToSequence(nn.Module):
-    """Transforms image into sequence for self-attention module.
-
-    Attributes:
-        sequence_length:
-        embedding_dim:
-    """
-
-    def __init__(self, n_dims_in: int, sequence_size: int, embedding_dim: int) -> None:
-        """Initializes ImageToSequence module."""
-        super().__init__()
-        self.n_dims_in = n_dims_in
-        self.sequence_size = sequence_size
-        self.embedding_dim = embedding_dim
-
-        image_dim = 3
-        image_height = 32
-        image_width = 32
-
-        in_channels = image_dim
-        out_channels = self.sequence_size * self.embedding_dim
-        patch_size = 2
-
-        assert image_height % patch_size == 0
-
-        self.conv = nn.Conv2d(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=patch_size,
-            stride=patch_size,
-        )
-
-        self.pool = nn.AdaptiveAvgPool2d(
-            output_size=1
-        )
-
-        # in_features = out_channels * (image_height // patch_size) * (image_width // patch_size)
-        # out_features = self.sequence_size * self.embedding_dim
-        # self.linear = nn.Linear(
-        #     in_features=in_features, out_features=out_features, bias=False
-        # )
-
-        self._weights_init()
-
-    def _weights_init(self) -> None:
-        for module in self.modules():
-            if isinstance(module, nn.Linear):
-                torch.nn.init.xavier_uniform_(module.weight.data)
-                if module.bias is not None:
-                    torch.nn.init.zeros_(module.bias.data)
-            if isinstance(module, nn.Conv2d):
-                torch.nn.init.xavier_uniform_(module.weight.data)
-                if module.bias is not None:
-                    torch.nn.init.zeros_(module.bias.data)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Forward method.
-
-        We don't need an extra embedding or positional encoding when  we
-        work with image data.
-
-        Images are of size (batch_size, num_channels * width * height) and
-        are transformed to size (batch_size, sequence_size * embedding_dim)
-
-        Returns:
-            Linear transformation.
-        """
-        x = self.conv(x)
-        x = self.pool(x)
         x = x.view(-1, self.sequence_size, self.embedding_dim)
         return x
 
@@ -233,15 +92,6 @@ class MultiHeadSelfAttention(nn.Module):
         self.linear = nn.Linear(
             in_features=self.embedding_dim, out_features=self.embedding_dim, bias=False
         )
-
-        self._weights_init()
-
-    def _weights_init(self) -> None:
-        for module in self.modules():
-            if isinstance(module, nn.Linear):
-                torch.nn.init.xavier_uniform_(module.weight.data)
-                if module.bias is not None:
-                    torch.nn.init.zeros_(module.bias.data)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method."""
@@ -325,15 +175,6 @@ class TransformerBlock(nn.Module):
 
         self.dropout = nn.Dropout(dropout_rate)
 
-        self._weights_init()
-
-    def _weights_init(self) -> None:
-        for module in self.modules():
-            if isinstance(module, nn.Linear):
-                torch.nn.init.kaiming_uniform_(module.weight.data, nonlinearity="relu")
-                if module.bias is not None:
-                    torch.nn.init.zeros_(module.bias.data)
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method.
         
@@ -364,15 +205,6 @@ class Classifier(nn.Module):
             out_features=self.n_dims_out,
             bias=True,
         )
-
-        self._weights_init()
-
-    def _weights_init(self) -> None:
-        for module in self.modules():
-            if isinstance(module, nn.Linear):
-                torch.nn.init.xavier_uniform_(module.weight.data)
-                if module.bias is not None:
-                    torch.nn.init.zeros_(module.bias.data)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method."""
