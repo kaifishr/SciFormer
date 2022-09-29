@@ -4,7 +4,7 @@
 
 # ---- Experiment specific parameters
 experiment:
-  tag: "blafoo"
+  tag: ""
   random_seed: 0
   device: "gpu"
 

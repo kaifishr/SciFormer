@@ -9,8 +9,6 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision.datasets.utils import download_url
 
-from .dataset import TensorDataset
-
 
 def seed_worker(worker_id):
     """Seed dataloader workers."""
@@ -110,50 +108,6 @@ def get_dataloader(config: dict) -> tuple[DataLoader, DataLoader]:
 
         # Add number of classes and input shape to config
         config["n_classes"] = 10
-        config["input_shape"] = (3, 32, 32)
-
-    elif dataset == "custom_from_numpy":
-        """
-        Create dataset for classification from Numpy ndarray with
-        custom TensorDataset class.
-
-        """
-
-        def get_random_dataset():
-
-            n_samples = 10
-            n_classes = 2
-            n_dims_in = (3, 32, 32)
-
-            x = np.random.randn(n_dims_in)
-            y = np.random.randint(n_classes, size=n_samples)
-
-            x = torch.Tensor(x)
-            y = torch.Tensor(y).long()
-
-            return x, y
-
-        train_images, train_labels = get_random_dataset()
-        test_images, test_labels = get_random_dataset()
-
-        transform_train = transforms.Compose(
-            [
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomVerticalFlip(),
-                transforms.Normalize(0.5, 0.5),
-            ]
-        )
-
-        transform_test = transforms.Compose([transforms.Normalize(0.5, 0.5)])
-
-        train_dataset = TensorDataset(
-            (train_images, train_labels), transform=transform_train
-        )
-        test_dataset = TensorDataset(
-            (test_images, test_labels), transform=transform_test
-        )
-
-        config["n_classes"] = 2
         config["input_shape"] = (3, 32, 32)
 
     else:

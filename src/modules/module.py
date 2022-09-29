@@ -43,6 +43,9 @@ class ImageToSequence(nn.Module):
             in_features=in_features, out_features=out_features, bias=False
         )
 
+        self.layer_norm_1 = nn.LayerNorm(in_features)
+        self.layer_norm_2 = nn.LayerNorm(out_features)
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method.
 
@@ -57,7 +60,9 @@ class ImageToSequence(nn.Module):
         """
         x = self.conv(x)
         x = torch.flatten(x, start_dim=1)
+        x = self.layer_norm_1(x)
         x = self.linear(x)
+        x = self.layer_norm_2(x)
         x = x.view(-1, self.sequence_size, self.embedding_dim)
         return x
 
@@ -171,23 +176,15 @@ class TransformerBlock(nn.Module):
             nn.Linear(self.embedding_dim, hidden_multiplier * self.embedding_dim),
             nn.ReLU(),
             nn.Linear(hidden_multiplier * self.embedding_dim, self.embedding_dim),
+            nn.Dropout(dropout_rate),
         )
-
-        self.dropout = nn.Dropout(dropout_rate)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method.
-        
-        TODO: Write this more concise. See mingpt. 
         """
-        att = self.attention(x)
-        out = self.layer_norm_1(att + x)
-        out = self.dropout(out)
-
-        mlp = self.mlp(out)
-        out = self.layer_norm_2(mlp + out)
-        out = self.dropout(out)
-        return out
+        x = x + self.attention(self.layer_norm_1(x))
+        x = x + self.mlp(self.layer_norm_2(x))
+        return x
 
 
 class Classifier(nn.Module):
