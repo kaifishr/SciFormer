@@ -71,6 +71,7 @@ class MultiHeadSelfAttention(nn.Module):
         embedding_dim,
         n_heads,
         head_dim,
+        dropout_rate: float = 0.1,
     ) -> None:
         """Initializes multi-head self-attention module."""
         super().__init__()
@@ -92,6 +93,8 @@ class MultiHeadSelfAttention(nn.Module):
         self.linear = nn.Linear(
             in_features=self.embedding_dim, out_features=self.embedding_dim, bias=False
         )
+
+        self.dropout = nn.Dropout(p=dropout_rate)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method."""
@@ -122,6 +125,7 @@ class MultiHeadSelfAttention(nn.Module):
         # Compute attention weights
         out = torch.bmm(queries, keys.transpose(1, 2)) / self.embedding_dim**0.5
         out = F.softmax(out, dim=2)
+        out = self.dropout(out)
 
         # Second part of scaled dot-product self-attention.
         out = torch.bmm(out, values)
@@ -134,6 +138,7 @@ class MultiHeadSelfAttention(nn.Module):
 
         # Unify all heads in linear transformation.
         out = self.linear(out)
+        out = self.dropout(out)
 
         return out
 
@@ -152,13 +157,13 @@ class TransformerBlock(nn.Module):
     ):
         super().__init__()
 
-        self.sequence_size = sequence_size
+        self.sequence_length = sequence_size
         self.embedding_dim = embedding_dim
         self.n_heads = n_heads
         self.head_dim = head_dim
 
         self.attention = MultiHeadSelfAttention(
-            sequence_size=self.sequence_size,
+            sequence_size=self.sequence_length,
             embedding_dim=self.embedding_dim,
             n_heads=self.n_heads,
             head_dim=self.head_dim,
@@ -169,6 +174,7 @@ class TransformerBlock(nn.Module):
 
         self.mlp = nn.Sequential(
             nn.Linear(self.embedding_dim, int(hidden_multiplier * self.embedding_dim)),
+            nn.Dropout(dropout_rate),
             nn.GELU(),
             nn.Linear(int(hidden_multiplier * self.embedding_dim), self.embedding_dim),
             nn.Dropout(dropout_rate),

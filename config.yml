@@ -14,7 +14,7 @@ experiment:
 # cifar10, imagewoof
 data:
   dataset: "cifar10"
-  num_workers: 2
+  num_workers: 4
 
 ############
 # Training #

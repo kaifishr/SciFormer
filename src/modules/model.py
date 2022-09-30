@@ -25,11 +25,11 @@ class ImageTransformer(nn.Module):
         self.n_dims_out = config["n_classes"]
 
         # Parameters for multi-head self-attention.
-        self.n_heads = 16       # 32
-        self.head_dim = 8 
-        self.sequence_size = 32
+        self.n_heads = 16
+        self.head_dim = 32
+        self.sequence_size = 64
         self.embedding_dim = self.n_heads * self.head_dim
-        self.n_blocks = 2
+        self.n_blocks = 6
 
         self.image_to_sequence = ImageToSequence(
             n_dims_in=self.n_dims_in,
@@ -75,7 +75,7 @@ class ImageTransformer(nn.Module):
         print(f"Number of parameters: {sum(n_params)/1e6:.2f} M")
 
     def forward(self, x):
-        x = self.image_to_sequence(x)
+        x = self.image_to_sequence(x) 
         x = self.transformer_blocks(x)
         x = self.classifier(x)
         return x

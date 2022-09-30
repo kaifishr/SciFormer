@@ -85,16 +85,21 @@ def get_dataloader(config: dict) -> tuple[DataLoader, DataLoader]:
 
         transform_train = transforms.Compose(
             [
-                transforms.RandomHorizontalFlip(),
-                transforms.RandomRotation(degrees=20),
                 transforms.RandomCrop(32, padding=4),
+                # transforms.Resize(32),
+                transforms.RandomHorizontalFlip(),
+                # transforms.RandomErasing(),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
             ]
         )
 
         transform_test = transforms.Compose(
-            [transforms.ToTensor(), transforms.Normalize(mean, std)]
+            [
+                # transforms.Resize(32),
+                transforms.ToTensor(), 
+                transforms.Normalize(mean, std)
+            ]
         )
 
         train_dataset = torchvision.datasets.CIFAR10(

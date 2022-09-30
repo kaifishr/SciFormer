@@ -14,14 +14,19 @@ A sequence of stacked `TransformerBlock`s consisting of a `MultiHeadSelfAttentio
 Finally, a `Classifier` module takes the output of the last `TransformerBlock` and applies a linear transformation to the network's final prediction.
 
 
+# Discussion
+
+Running a few experiments showed that the model's test accuracy improves with an increased number of attention heads, head dimension, and sequence length (in that order). Adding more attention blocks always resulted in higher test accuracy.
+
 # TODO
 
-- ...
+- Add custom config class for better config handling.
+- Add simple random search for parameters of transformer.
 
 
 # References
 
-...
+[1] An Image is Worth 16x16 Words: https://arxiv.org/pdf/2010.11929.pdf
 
 
 # License
