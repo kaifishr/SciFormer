@@ -168,9 +168,9 @@ class TransformerBlock(nn.Module):
         self.layer_norm_2 = nn.LayerNorm(self.embedding_dim)
 
         self.mlp = nn.Sequential(
-            nn.Linear(self.embedding_dim, hidden_multiplier * self.embedding_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_multiplier * self.embedding_dim, self.embedding_dim),
+            nn.Linear(self.embedding_dim, int(hidden_multiplier * self.embedding_dim)),
+            nn.GELU(),
+            nn.Linear(int(hidden_multiplier * self.embedding_dim), self.embedding_dim),
             nn.Dropout(dropout_rate),
         )
 
