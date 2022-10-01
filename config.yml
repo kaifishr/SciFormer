@@ -1,6 +1,6 @@
-########
-# NetLab
-########
+##################
+# ImageTransformer
+##################
 
 # ---- Experiment specific parameters
 experiment:
@@ -8,18 +8,38 @@ experiment:
   random_seed: 0
   device: "gpu"
 
-##########
-## Data ##
-##########
+########
+# Data #
+########
 # cifar10, imagewoof
 data:
   dataset: "cifar10"
   num_workers: 2
 
-############
-# Training #
-############
-train:
+#########
+# Model #
+#########
+
+image_transformer:
+  n_blocks: 4
+  image_to_sequence:
+    patch_size: 2
+    out_channels: 3
+  transformer_block:
+    multi_head_self_attention:
+      n_heads: 8
+      sequence_size: 16
+    hidden_expansion: 4
+  classifier:
+    bla: None
+
+###########
+# Trainer #
+###########
+
+trainer:
+  device: "gpu"
+  random_seed: 0
   n_epochs: 400
   learning_rate: 1.0e-4
   weight_decay: 0.0

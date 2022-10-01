@@ -5,6 +5,8 @@ from pathlib import Path
 
 import torch
 
+from .cfg import Config
+
 
 def init_config(file_path: str) -> dict:
     """Initializes configuration for experiment.
@@ -26,6 +28,10 @@ def init_config(file_path: str) -> dict:
     if config["experiment"]["device"] == "gpu":
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     config["device"] = str(device)
+
+    cfg = Config(d=config)
+    print(cfg)
+    exit()
 
     return config
 

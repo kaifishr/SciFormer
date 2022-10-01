@@ -20,11 +20,11 @@ class ImageToSequence(nn.Module):
         self.sequence_size = sequence_size
         self.embedding_dim = embedding_dim
 
-        image_dim = 3
+        image_channels = 3
         image_height = 32
         image_width = 32
 
-        in_channels = image_dim
+        in_channels = image_channels
         out_channels = 3
         patch_size = 2
 
