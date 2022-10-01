@@ -2,34 +2,42 @@
 # ImageTransformer
 ##################
 
-# ---- Experiment specific parameters
-experiment:
-  tag: ""
-  random_seed: 0
-  device: "gpu"
+tag: Null
+random_seed: 0
+
+##############
+# Dataloader #
+##############
+# cifar10, imagewoof
+dataloader:
+  dataset: "cifar10"
+  num_workers: 2
 
 ########
 # Data #
 ########
-# cifar10, imagewoof
 data:
-  dataset: "cifar10"
-  num_workers: 2
+  n_classes: Null
+  input_shape: Null
 
 #########
 # Model #
 #########
 
-image_transformer:
+transformer:
   n_blocks: 4
   image_to_sequence:
-    patch_size: 2
     out_channels: 3
+    patch_size: 2
   transformer_block:
-    multi_head_self_attention:
-      n_heads: 8
-      sequence_size: 16
     hidden_expansion: 4
+    dropout_prob: 0.1
+  self_attention:
+    sequence_length: 16
+    n_heads: 8
+    head_dim: 16
+    dropout_prob: 0.1
+    use_bias: False
   classifier:
     bla: None
 
@@ -38,25 +46,26 @@ image_transformer:
 ###########
 
 trainer:
-  device: "gpu"
-  random_seed: 0
+  device: "gpu"   # gpu, cpu, auto
   n_epochs: 400
   learning_rate: 1.0e-4
   weight_decay: 0.0
   lr_step_size: 200
   lr_gamma: 0.5
   batch_size: 64
+  grad_norm_clip: 1.0
 
 ###########
 # Summary #
 ###########
+
 summary:
   add_graph: true
   add_sample_batch: true
   save_train_stats_every_n_epochs: 1
   save_test_stats_every_n_epochs: 10
   add_params_hist_every_n_epochs: 50
-  save_model_every_n_epochs: 50
+  save_model_every_n_epochs: -1
 
 checkpoints:
   load_model: 0
@@ -65,8 +74,8 @@ checkpoints:
 ###############
 # Directories #
 ###############
-dirs:
-  weights: "weights"
-  runs: "runs"
-  data: "data"
 
+dirs:
+  data: "data"
+  runs: "runs"
+  weights: "weights"

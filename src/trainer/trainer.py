@@ -10,21 +10,22 @@ from torch.utils.tensorboard import SummaryWriter
 
 from ..utils.stats import comp_stats_classification
 from ..summary.summary import add_graph, add_input_samples, add_hist_params
+from ..config.cfg import Config
 
 
-def train(model: torch.nn.Module, dataloader: tuple, config: dict) -> None:
+def trainer(model: torch.nn.Module, dataloader: tuple, config: Config) -> None:
     """
 
     Args:
         model: PyTorch model.
         dataloader: Tuple holding training and test dataloader.
-        config: Dictionary holding configuration for training.
+        config: Class holding configuration.
 
     """
-    runs_dir = config["dirs"]["runs"]
-    dataset = config["data"]["dataset"]
+    runs_dir = config.dirs.runs
+    dataset = config.dataloader.dataset
     uid = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S.%f")
-    tag = config["experiment"]["tag"]
+    tag = config.tag
 
     log_dir = os.path.join(runs_dir, f"{uid}_{dataset}{f'_{tag}' if tag else ''}")
 
@@ -33,7 +34,7 @@ def train(model: torch.nn.Module, dataloader: tuple, config: dict) -> None:
     writer.close()
 
 
-def run_training(model, dataloader, writer, config: dict) -> None:
+def run_training(model, dataloader, writer, config: Config) -> None:
     """Main training logic.
 
     Trains passed model with data coming from dataloader.
@@ -42,28 +43,26 @@ def run_training(model, dataloader, writer, config: dict) -> None:
         model: PyTorch model.
         dataloader: Training and test data loader.
         writer: Tensorboard writer instance.
-        config: Dictionary holding configuration for training.
+        config: Class holding configuration.
 
     """
-    tag = config["experiment"]["tag"]
-    device = config["device"]
-    dataset = config["data"]["dataset"]
-    n_epochs = config["train"]["n_epochs"]
-    save_train_stats_every_n_epochs = config["summary"][
-        "save_train_stats_every_n_epochs"
-    ]
-    save_test_stats_every_n_epochs = config["summary"]["save_test_stats_every_n_epochs"]
-    step_size = config["train"]["lr_step_size"]
-    gamma = config["train"]["lr_gamma"]
+    tag = config.tag
+    device = config.trainer.device
+    dataset = config.dataloader.dataset
+    n_epochs = config.trainer.n_epochs
+    save_train_stats_every_n_epochs = config.summary.save_train_stats_every_n_epochs
+    save_test_stats_every_n_epochs = config.summary.save_test_stats_every_n_epochs
+    step_size = config.trainer.lr_step_size
+    gamma = config.trainer.lr_gamma
 
     trainloader, testloader = dataloader
 
     # Add graph of model to Tensorboard.
-    if config["summary"]["add_graph"]:
+    if config.summary.add_graph:
         add_graph(model=model, dataloader=trainloader, writer=writer, config=config)
 
     # Add sample batch to Tensorboard.
-    if config["summary"]["add_sample_batch"]:
+    if config.summary.add_sample_batch:
         add_input_samples(
             dataloader=trainloader, writer=writer, tag="train", global_step=0
         )
@@ -71,8 +70,8 @@ def run_training(model, dataloader, writer, config: dict) -> None:
             dataloader=testloader, writer=writer, tag="test", global_step=0
         )
 
-    learning_rate = config["train"]["learning_rate"]
-    weight_decay = config["train"]["weight_decay"]
+    learning_rate = config.trainer.learning_rate
+    weight_decay = config.trainer.weight_decay
     optimizer = optim.Adam(
         model.parameters(), lr=learning_rate, weight_decay=weight_decay
     )
@@ -107,6 +106,7 @@ def run_training(model, dataloader, writer, config: dict) -> None:
 
             # Backpropagation
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), config.trainer.grad_norm_clip)
 
             # Gradient descent
             optimizer.step()
@@ -142,20 +142,20 @@ def run_training(model, dataloader, writer, config: dict) -> None:
                 "test_accuracy", test_accuracy, global_step=n_update_steps
             )
 
-        if config["summary"]["add_params_hist_every_n_epochs"] > 0:
-            if (epoch % config["summary"]["add_params_hist_every_n_epochs"] == 0) or (
+        if config.summary.add_params_hist_every_n_epochs > 0:
+            if (epoch % config.summary.add_params_hist_every_n_epochs == 0) or (
                 epoch + 1 == n_epochs
             ):
                 add_hist_params(model=model, writer=writer, global_step=epoch)
 
-        if config["summary"]["save_model_every_n_epochs"] > 0:
-            if (epoch % config["summary"]["save_model_every_n_epochs"] == 0) or (
+        if config.summary.save_model_every_n_epochs > 0:
+            if (epoch % config.summary.save_model_every_n_epochs == 0) or (
                 epoch + 1 == n_epochs
             ):
                 model_name = (
                     f"{dataset}_epoch_{epoch:04d}{f'_{tag}' if tag else ''}.pth"
                 )
-                model_path = os.path.join(config["dirs"]["weights"], model_name)
+                model_path = os.path.join(config.dirs.weights, model_name)
                 torch.save(model.state_dict(), model_path)
 
         print(f"{epoch:04d} {running_loss:.5f} {running_accuracy:.4f}")

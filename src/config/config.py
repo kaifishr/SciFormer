@@ -9,29 +9,32 @@ from .cfg import Config
 
 
 def init_config(file_path: str) -> dict:
-    """Initializes configuration for experiment.
+    """Initializes configuration class for experiment.
 
     Args:
         file_path: File to configuration file.
 
     Returns:
-        Dictionary holding configuration.
+        Config class.
 
     """
+
+    # Load yaml file as dictionary.
     config = load_config(file_path=file_path)
 
-    # Create directories
-    for directory in config["dirs"].values():
-        Path(directory).mkdir(parents=True, exist_ok=True)
+    # Convert dictionary to configuration class.
+    config = Config(d=config)
+
+    Path(config.dirs.data).mkdir(parents=True, exist_ok=True)
+    Path(config.dirs.runs).mkdir(parents=True, exist_ok=True)
+    Path(config.dirs.weights).mkdir(parents=True, exist_ok=True)
 
     # Check for accelerator
-    if config["experiment"]["device"] == "gpu":
+    if config.trainer.device == "gpu":
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    config["device"] = str(device)
-
-    cfg = Config(d=config)
-    print(cfg)
-    exit()
+        config.trainer.device=device
+    else:
+        config.trainer.device == torch.device("cpu")
 
     return config
 

@@ -1,8 +1,6 @@
 """Collection of custom neural networks.
 
 """
-from math import prod
-
 import torch
 import torch.nn as nn
 
@@ -20,40 +18,14 @@ class ImageTransformer(nn.Module):
         """Initializes image transformer."""
         super().__init__()
 
-        self.input_shape = config["input_shape"]
-        self.n_dims_in = prod(self.input_shape)
-        self.n_dims_out = config["n_classes"]
+        n_blocks = config.transformer.n_blocks
 
-        # Parameters for multi-head self-attention.
-        self.n_heads = 8
-        self.head_dim = 16
-        self.sequence_size = 32
-        self.embedding_dim = self.n_heads * self.head_dim
-        self.n_blocks = 4
+        self.image_to_sequence = ImageToSequence(config)
 
-        self.image_to_sequence = ImageToSequence(
-            n_dims_in=self.n_dims_in,
-            sequence_size=self.sequence_size,
-            embedding_dim=self.embedding_dim,
-        )
+        blocks = [TransformerBlock(config) for _ in range(n_blocks)]
+        self.transformer_blocks = nn.Sequential(*blocks)
 
-        self.transformer_blocks = nn.Sequential(
-            *[
-                TransformerBlock(
-                    sequence_size=self.sequence_size,
-                    embedding_dim=self.embedding_dim,
-                    n_heads=self.n_heads,
-                    head_dim=self.head_dim,
-                )
-                for _ in range(self.n_blocks)
-            ]
-        )
-
-        self.classifier = Classifier(
-            self.sequence_size,
-            self.embedding_dim,
-            self.n_dims_out,
-        )
+        self.classifier = Classifier(config)
 
         self._count_model_parameteres()
         self.apply(self._init_weights)

@@ -9,6 +9,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision.datasets.utils import download_url
 
+from ..config.cfg import Config
+
 
 def seed_worker(worker_id):
     """Seed dataloader workers."""
@@ -17,12 +19,12 @@ def seed_worker(worker_id):
     random.seed(worker_seed)
 
 
-def get_dataloader(config: dict) -> tuple[DataLoader, DataLoader]:
+def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
     """Creates dataloader for specified dataset."""
 
-    dataset = config["data"]["dataset"]
-    num_workers = config["data"]["num_workers"]
-    batch_size = config["train"]["batch_size"]
+    dataset = config.dataloader.dataset 
+    num_workers = config.dataloader.num_workers
+    batch_size = config.trainer.batch_size
 
     if dataset == "imagewoof":
 
@@ -70,8 +72,8 @@ def get_dataloader(config: dict) -> tuple[DataLoader, DataLoader]:
         )
 
         # Add number of classes and input shape to config
-        config["n_classes"] = 10
-        config["input_shape"] = (3, 128, 128)
+        config.data.n_classes = 10
+        config.data.input_shape = (3, 128, 128)
 
     elif dataset == "cifar10":
 
@@ -86,7 +88,6 @@ def get_dataloader(config: dict) -> tuple[DataLoader, DataLoader]:
         transform_train = transforms.Compose(
             [
                 transforms.RandomCrop(32, padding=4),
-                # transforms.Resize(32),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 transforms.RandomErasing(),
@@ -96,7 +97,6 @@ def get_dataloader(config: dict) -> tuple[DataLoader, DataLoader]:
 
         transform_test = transforms.Compose(
             [
-                # transforms.Resize(32),
                 transforms.ToTensor(), 
                 transforms.Normalize(mean, std)
             ]
@@ -110,14 +110,19 @@ def get_dataloader(config: dict) -> tuple[DataLoader, DataLoader]:
         )
 
         # Add number of classes and input shape to config
-        config["n_classes"] = 10
-        config["input_shape"] = (3, 32, 32)
+        config.data.n_classes = 10
+        config.data.input_shape = (3, 32, 32)
 
     else:
         raise NotImplementedError(f"Dataloader for {dataset} not implemented.")
 
     generator = torch.Generator()
-    generator.manual_seed(config["experiment"]["random_seed"])
+    generator.manual_seed(config.random_seed)
+
+    if "cuda" in str(config.trainer.device):
+        pin_memory = True
+    else:
+        pin_memory = False
 
     trainloader = torch.utils.data.DataLoader(
         dataset=train_dataset,
@@ -126,7 +131,7 @@ def get_dataloader(config: dict) -> tuple[DataLoader, DataLoader]:
         worker_init_fn=seed_worker,
         generator=generator,
         shuffle=True,
-        pin_memory=True,
+        pin_memory=pin_memory,
     )
 
     testloader = torch.utils.data.DataLoader(
@@ -136,7 +141,7 @@ def get_dataloader(config: dict) -> tuple[DataLoader, DataLoader]:
         worker_init_fn=seed_worker,
         generator=generator,
         shuffle=False,
-        pin_memory=True,
+        pin_memory=pin_memory,
     )
 
     return trainloader, testloader

@@ -21,7 +21,7 @@ def add_graph(
         config:
 
     """
-    device = config["device"]
+    device = config.trainer.device
     x_data, _ = next(iter(dataloader))
     writer.add_graph(model=model, input_to_model=x_data.to(device))
 
