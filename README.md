@@ -1,6 +1,6 @@
 # ImageTransformer
 
-Minimal multi-head self-attention transformer architecture for image classification in PyTorch for education purposes.
+Minimal multi-head self-attention transformer architecture for image classification implemented in PyTorch for education purposes.
 
 
 # Model
@@ -14,9 +14,24 @@ A sequence of stacked `TransformerBlock`s consisting of a `MultiHeadSelfAttentio
 Finally, a `Classifier` module takes the output of the last `TransformerBlock` and applies a linear transformation to the network's final prediction.
 
 
+# Random search
+
+A simple random search method has been implemented to explore the model in more depth and to better understand the interplay of the model's various hyperparameters such as
+
+- sequence length
+- token embedding dimensions
+- number of attention heads
+- number of transformer blocks
+- hidden expansion
+- dropout probability
+- use of bias in self-attention module
+- learning rate
+
+
 # Discussion
 
 Running a few experiments showed that the model's test accuracy improves with an increased number of attention heads, head dimension, and sequence length (in that order). Adding more attention blocks always resulted in higher test accuracy.
+
 
 # TODO
 

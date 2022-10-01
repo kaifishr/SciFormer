@@ -8,8 +8,8 @@ import torch.optim as optim
 
 from torch.utils.tensorboard import SummaryWriter
 
-from ..utils.stats import comp_stats_classification
-from ..summary.summary import add_graph, add_input_samples, add_hist_params
+from ..utils.stats import comp_stats_classification 
+from ..summary.summary import add_graph, add_input_samples, add_hist_params, add_hparams
 from ..config.cfg import Config
 
 
@@ -124,13 +124,13 @@ def run_training(model, dataloader, writer, config: Config) -> None:
 
         scheduler.step()
 
-        running_loss = running_loss / running_counter
-        running_accuracy = running_accuracy / running_counter
+        train_loss = running_loss / running_counter
+        train_accuracy = running_accuracy / running_counter
 
         if (epoch % save_train_stats_every_n_epochs == 0) or (epoch + 1 == n_epochs):
-            writer.add_scalar("train_loss", running_loss, global_step=n_update_steps)
+            writer.add_scalar("train_loss", train_loss, global_step=n_update_steps)
             writer.add_scalar(
-                "train_accuracy", running_accuracy, global_step=n_update_steps
+                "train_accuracy", train_accuracy, global_step=n_update_steps
             )
 
         if (epoch % save_test_stats_every_n_epochs == 0) or (epoch + 1 == n_epochs):
@@ -141,6 +141,16 @@ def run_training(model, dataloader, writer, config: Config) -> None:
             writer.add_scalar(
                 "test_accuracy", test_accuracy, global_step=n_update_steps
             )
+
+            if config.summary.add_hparams:
+                add_hparams(
+                    writer,
+                    config, 
+                    train_loss, 
+                    train_accuracy,
+                    test_loss,
+                    test_accuracy
+                )
 
         if config.summary.add_params_hist_every_n_epochs > 0:
             if (epoch % config.summary.add_params_hist_every_n_epochs == 0) or (

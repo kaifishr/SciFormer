@@ -8,6 +8,8 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 
+from ..config.cfg import Config
+
 
 def add_graph(
     model: nn.Module, dataloader: DataLoader, writer: SummaryWriter, config: dict
@@ -98,3 +100,35 @@ def add_hist_params(
                         values=module.bias.data,
                         global_step=global_step,
                     )
+
+def add_hparams(
+    writer: SummaryWriter, 
+    config: Config, 
+    train_loss: float, 
+    train_accuracy: float, 
+    test_loss: float, 
+    test_accuracy: float
+) -> None:
+    """Adds hyperparameters to tensorboard."""
+
+    hparam_dict = {
+        "trainer/learning_rate": config.trainer.learning_rate,
+        "trainer/batch_size": config.trainer.batch_size,
+        "transformer/n_blocks": config.transformer.n_blocks,
+        "block/hidden_expansion": config.transformer.transformer_block.hidden_expansion,
+        "block/dropout_prob": config.transformer.transformer_block.dropout_prob,
+        "attention/sequence_length": config.transformer.self_attention.sequence_length,
+        "attention/n_heads": config.transformer.self_attention.n_heads,
+        "attention/head_dim": config.transformer.self_attention.head_dim,
+        "attention/dropout_prob": config.transformer.self_attention.dropout_prob,
+        "attention/use_bias": config.transformer.self_attention.use_bias,
+    }
+
+    metric_dict = {
+        "hparam/train_loss": train_loss,
+        "hparam/train_accuracy": train_accuracy,
+        "hparam/test_loss": test_loss,
+        "hparam/test_accuracy": test_accuracy,
+    }
+
+    writer.add_hparams(hparam_dict, metric_dict) 
