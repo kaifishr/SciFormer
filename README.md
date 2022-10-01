@@ -20,7 +20,6 @@ Running a few experiments showed that the model's test accuracy improves with an
 
 # TODO
 
-- Add custom config class for better config handling.
 - Add simple random search for parameters of transformer.
 
 

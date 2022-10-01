@@ -25,11 +25,11 @@ class ImageTransformer(nn.Module):
         self.n_dims_out = config["n_classes"]
 
         # Parameters for multi-head self-attention.
-        self.n_heads = 16
-        self.head_dim = 32
-        self.sequence_size = 64
+        self.n_heads = 8
+        self.head_dim = 16
+        self.sequence_size = 32
         self.embedding_dim = self.n_heads * self.head_dim
-        self.n_blocks = 6
+        self.n_blocks = 4
 
         self.image_to_sequence = ImageToSequence(
             n_dims_in=self.n_dims_in,

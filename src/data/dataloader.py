@@ -88,8 +88,8 @@ def get_dataloader(config: dict) -> tuple[DataLoader, DataLoader]:
                 transforms.RandomCrop(32, padding=4),
                 # transforms.Resize(32),
                 transforms.RandomHorizontalFlip(),
-                # transforms.RandomErasing(),
                 transforms.ToTensor(),
+                transforms.RandomErasing(),
                 transforms.Normalize(mean, std),
             ]
         )
