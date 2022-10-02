@@ -90,7 +90,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
                 transforms.RandomCrop(32, padding=4),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
-                transforms.RandomErasing(),
+                # transforms.RandomErasing(),
                 transforms.Normalize(mean, std),
             ]
         )

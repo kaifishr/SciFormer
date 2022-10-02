@@ -36,6 +36,7 @@ def experiment_random_search():
 
     # Get configuration file
     config = init_config(file_path="config.yml")
+    config.tag = "random_search"
     config.trainer.n_epochs = n_epochs
 
     for _ in range(n_runs):

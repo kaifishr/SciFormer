@@ -40,9 +40,17 @@ class ImageToSequence(nn.Module):
             stride=patch_size,
         )
 
+        # in_features = out_channels * (img_height // patch_size) * (img_width // patch_size)
+        # out_features = self.sequence_length * self.embedding_dim
+        # self.linear = nn.Linear(in_features=in_features, out_features=out_features)
+
+        hidden_dim = 256
+
         in_features = out_channels * (img_height // patch_size) * (img_width // patch_size)
+        self.linear1 = nn.Linear(in_features=in_features, out_features=hidden_dim)
+
         out_features = self.sequence_length * self.embedding_dim
-        self.linear = nn.Linear(in_features=in_features, out_features=out_features)
+        self.linear2 = nn.Linear(in_features=hidden_dim, out_features=out_features)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method.
@@ -58,7 +66,8 @@ class ImageToSequence(nn.Module):
         """
         x = self.conv(x)
         x = torch.flatten(x, start_dim=1)
-        x = self.linear(x)
+        x = self.linear1(x)
+        x = self.linear2(x)
         x = x.view(-1, self.sequence_length, self.embedding_dim)
         return x
 

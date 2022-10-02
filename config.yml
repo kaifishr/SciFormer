@@ -25,7 +25,7 @@ data:
 #########
 
 transformer:
-  n_blocks: 4
+  n_blocks: 2
   image_to_sequence:
     out_channels: 1
     patch_size: 1
