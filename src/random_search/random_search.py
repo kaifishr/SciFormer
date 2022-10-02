@@ -4,11 +4,10 @@ Creates random sets of hyperparameters based
 on hparams.yml configuration file.
 
 """
-import numpy as np
 import random
 import time
 
-from ..config.cfg import Config
+from ..config.config import Config
 
 
 def create_random_config_(config: Config) -> None:

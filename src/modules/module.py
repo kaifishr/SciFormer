@@ -7,7 +7,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-from ..config.cfg import Config
+from ..config.config import Config
 
 
 class ImageToSequence(nn.Module):

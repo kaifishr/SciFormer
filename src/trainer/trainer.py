@@ -10,7 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from ..utils.stats import comp_stats_classification 
 from ..summary.summary import add_graph, add_input_samples, add_hist_params, add_hparams
-from ..config.cfg import Config
+from ..config.config import Config
 
 
 def trainer(model: torch.nn.Module, dataloader: tuple, config: Config) -> None:
@@ -168,4 +168,4 @@ def run_training(model, dataloader, writer, config: Config) -> None:
                 model_path = os.path.join(config.dirs.weights, model_name)
                 torch.save(model.state_dict(), model_path)
 
-        print(f"{epoch:04d} {running_loss:.5f} {running_accuracy:.4f}")
+        print(f"{epoch:04d} {train_loss:.5f} {train_accuracy:.4f}")

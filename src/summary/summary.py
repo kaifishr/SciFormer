@@ -8,7 +8,7 @@ from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 
-from ..config.cfg import Config
+from ..config.config import Config
 
 
 def add_graph(

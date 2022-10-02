@@ -9,7 +9,7 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision.datasets.utils import download_url
 
-from ..config.cfg import Config
+from ..config.config import Config
 
 
 def seed_worker(worker_id):
