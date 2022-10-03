@@ -27,14 +27,13 @@ data:
 transformer:
   n_blocks: 2
   image_to_sequence:
-    out_channels: 1
-    patch_size: 1
+    patch_size: 2
   transformer_block:
     hidden_expansion: 4
     dropout_prob: 0.0
   self_attention:
     sequence_length: 16
-    n_heads: 8
+    n_heads: 16
     head_dim: 32
     dropout_prob: 0.0
     use_bias: False

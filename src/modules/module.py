@@ -3,6 +3,7 @@
 from importlib.resources import path
 from math import prod
 from black import out
+from requests import patch
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -28,29 +29,21 @@ class ImageToSequence(nn.Module):
 
         img_channels, img_height, img_width = config.data.input_shape
 
-        out_channels = config.transformer.image_to_sequence.out_channels
         patch_size = config.transformer.image_to_sequence.patch_size
 
         assert (img_height % patch_size == 0) and (img_width % patch_size == 0)
 
         self.conv = nn.Conv2d(
             in_channels=img_channels,
-            out_channels=out_channels,
-            kernel_size=patch_size,
-            stride=patch_size,
+            out_channels=self.sequence_length,
+            kernel_size=(patch_size, patch_size),
+            stride=(patch_size, patch_size),
         )
 
-        # in_features = out_channels * (img_height // patch_size) * (img_width // patch_size)
-        # out_features = self.sequence_length * self.embedding_dim
-        # self.linear = nn.Linear(in_features=in_features, out_features=out_features)
-
-        hidden_dim = 256
-
-        in_features = out_channels * (img_height // patch_size) * (img_width // patch_size)
-        self.linear1 = nn.Linear(in_features=in_features, out_features=hidden_dim)
-
-        out_features = self.sequence_length * self.embedding_dim
-        self.linear2 = nn.Linear(in_features=hidden_dim, out_features=out_features)
+        self.linear = nn.Linear(
+            in_features=(img_height // patch_size) * (img_width // patch_size), 
+            out_features=self.embedding_dim
+        )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method.
@@ -65,9 +58,8 @@ class ImageToSequence(nn.Module):
             Linear transformation.
         """
         x = self.conv(x)
-        x = torch.flatten(x, start_dim=1)
-        x = self.linear1(x)
-        x = self.linear2(x)
+        x = torch.flatten(input=x, start_dim=2, end_dim=-1)
+        x = self.linear(x)
         x = x.view(-1, self.sequence_length, self.embedding_dim)
         return x
 

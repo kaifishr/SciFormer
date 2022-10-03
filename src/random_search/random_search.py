@@ -26,7 +26,7 @@ def create_random_config_(config: Config) -> None:
     # Number of transformer blocks
     # n_blocks = random.choice([1, 2, 3, 4])
     # config.transformer.n_blocks = n_blocks
-
+    
     patch_size = random.choice([1, 2, 4])
     config.transformer.image_to_sequence.patch_size = patch_size
 
