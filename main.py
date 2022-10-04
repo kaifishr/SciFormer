@@ -31,8 +31,8 @@ def experiment_long_run():
 
 def experiment_random_search():
 
-    n_runs = 1000000000
-    n_epochs = 5
+    n_runs = 1000
+    n_epochs = 20
 
     # Get configuration file
     config = init_config(file_path="config.yml")
@@ -60,8 +60,8 @@ def experiment_random_search():
 
 
 def main():
-    # experiment_long_run()
-    experiment_random_search()
+    experiment_long_run()
+    # experiment_random_search()
 
 
 if __name__ == "__main__":

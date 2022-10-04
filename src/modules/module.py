@@ -55,7 +55,7 @@ class ImageToSequence(nn.Module):
         are transformed to size (batch_size, sequence_size * embedding_dim)
 
         Returns:
-            Linear transformation.
+            Tensor representing sequence of tokens.
         """
         x = self.conv(x)
         x = torch.flatten(input=x, start_dim=2, end_dim=-1)
@@ -79,6 +79,7 @@ class MultiHeadSelfAttention(nn.Module):
         self.embedding_dim = cfg.n_heads * cfg.head_dim
         self.dropout_prob = cfg.dropout_prob
         self.use_bias = cfg.use_bias
+        self.use_mask = cfg.use_mask
 
         bias = True if self.use_bias else False
 
@@ -91,6 +92,14 @@ class MultiHeadSelfAttention(nn.Module):
         self.comp_values = nn.Linear(
             in_features=self.embedding_dim, out_features=self.embedding_dim, bias=bias
         )
+
+        # Trainable mask. Let the network decide how the mask should look like.
+        if self.use_mask:
+            self.mask = nn.Parameter(
+                data=torch.normal(mean=0.0, std=0.02, size=(self.sequence_length, self.sequence_length)),
+                requires_grad=True
+            )
+
         self.linear = nn.Linear(
             in_features=self.embedding_dim, out_features=self.embedding_dim, bias=bias
         )
@@ -125,6 +134,10 @@ class MultiHeadSelfAttention(nn.Module):
         # First part of scaled dot-product self-attention
         # Compute attention weights
         out = torch.bmm(queries, keys.transpose(1, 2)) / self.embedding_dim**0.5
+
+        if self.use_mask:
+            out = self.mask + out
+
         out = F.softmax(out, dim=2)
         out = self.dropout(out)
 
