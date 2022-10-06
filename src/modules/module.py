@@ -1,9 +1,5 @@
 """Modules of ImageTransformer.
 """
-from importlib.resources import path
-from math import prod
-from black import out
-from requests import patch
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -62,6 +58,32 @@ class ImageToSequence(nn.Module):
         x = self.linear(x)
         x = x.view(-1, self.sequence_length, self.embedding_dim)
         return x
+
+
+class PositionEmbedding(nn.Module):
+    """Position embedding for images.
+
+    Attributes:
+        sequence_length:
+        embedding_dim:
+    """
+    def __init__(self, config: Config) -> None:
+        """Initializes ImageToSequence module."""
+        super().__init__()
+
+        cfg = config.transformer.self_attention
+        sequence_length = cfg.sequence_length
+        embedding_dim = cfg.n_heads * cfg.head_dim
+        self.embedding = nn.Parameter(
+            data=torch.normal(
+                mean=0.0,
+                std=0.02,
+                size=(sequence_length, embedding_dim),
+            )
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return x + self.embedding(x)
 
 
 class MultiHeadSelfAttention(nn.Module):
