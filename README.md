@@ -1,6 +1,6 @@
 # ImageTransformer
 
-Minimal multi-head self-attention transformer architecture for image classification implemented in PyTorch for education purposes.
+Experimental minimal multi-head self-attention transformer architecture for image classification implemented in PyTorch for education purposes.
 
 # Model
 

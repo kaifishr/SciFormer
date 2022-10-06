@@ -8,7 +8,7 @@ import torch.optim as optim
 
 from torch.utils.tensorboard import SummaryWriter
 
-from ..utils.stats import comp_stats_classification 
+from ..utils.stats import comp_stats_classification
 from ..summary.summary import add_graph, add_input_samples, add_hist_params, add_hparams
 from ..config.config import Config
 
@@ -106,7 +106,9 @@ def run_training(model, dataloader, writer, config: Config) -> None:
 
             # Backpropagation
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), config.trainer.grad_norm_clip)
+            torch.nn.utils.clip_grad_norm_(
+                model.parameters(), config.trainer.grad_norm_clip
+            )
 
             # Gradient descent
             optimizer.step()
@@ -144,12 +146,7 @@ def run_training(model, dataloader, writer, config: Config) -> None:
 
             if config.summary.add_hparams:
                 add_hparams(
-                    writer,
-                    config, 
-                    train_loss, 
-                    train_accuracy,
-                    test_loss,
-                    test_accuracy
+                    writer, config, train_loss, train_accuracy, test_loss, test_accuracy
                 )
 
         if config.summary.add_params_hist_every_n_epochs > 0:

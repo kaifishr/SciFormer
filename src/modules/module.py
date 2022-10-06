@@ -41,8 +41,8 @@ class ImageToSequence(nn.Module):
         )
 
         self.linear = nn.Linear(
-            in_features=(img_height // patch_size) * (img_width // patch_size), 
-            out_features=self.embedding_dim
+            in_features=(img_height // patch_size) * (img_width // patch_size),
+            out_features=self.embedding_dim,
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -96,8 +96,12 @@ class MultiHeadSelfAttention(nn.Module):
         # Trainable mask. Let the network decide how the mask should look like.
         if self.use_mask:
             self.mask = nn.Parameter(
-                data=torch.normal(mean=0.0, std=0.02, size=(self.sequence_length, self.sequence_length)),
-                requires_grad=True
+                data=torch.normal(
+                    mean=0.0,
+                    std=0.02,
+                    size=(self.sequence_length, self.sequence_length),
+                ),
+                requires_grad=True,
             )
 
         self.linear = nn.Linear(

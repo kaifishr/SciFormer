@@ -9,9 +9,10 @@ import torch
 class Config:
     """Configuration class.
 
-    Class creates nested configuration for parameters used 
+    Class creates nested configuration for parameters used
     in different modules during training.
     """
+
     def __init__(self, d: dict = None) -> None:
         """Initializes config class."""
         self.merge_dict(d)
@@ -74,7 +75,7 @@ def init_config(file_path: str) -> dict:
     # Check for accelerator
     if config.trainer.device == "gpu":
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        config.trainer.device=device
+        config.trainer.device = device
     else:
         config.trainer.device == torch.device("cpu")
 

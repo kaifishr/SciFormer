@@ -89,8 +89,8 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
             [
                 transforms.RandomCrop(32, padding=4),
                 transforms.RandomHorizontalFlip(),
-                transforms.ColorJitter(brightness=0.5, hue=0.3),
-                transforms.RandomRotation(degrees=(0, 30)),     ###
+                # transforms.ColorJitter(brightness=0.5, hue=0.3),
+                # transforms.RandomRotation(degrees=(0, 30)),     ###
                 transforms.ToTensor(),
                 transforms.RandomErasing(),
                 transforms.Normalize(mean, std),
@@ -114,6 +114,75 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         # Add number of classes and input shape to config
         config.data.n_classes = 10
         config.data.input_shape = (3, 32, 32)
+
+    elif dataset == "mnist":
+
+        mnist = torchvision.datasets.MNIST(root="./data", train=True, download=True)
+        mean = np.mean(np.array(mnist.data / 255.0), axis=(0, 1, 2))  
+        std = np.std(np.array(mnist.data / 255.0), axis=(0, 1, 2))
+
+        transform_train = transforms.Compose(
+            [
+                transforms.RandomCrop(28, padding=4),
+                # transforms.RandomRotation(degrees=(0, 30)),     ###
+                transforms.ToTensor(),
+                # transforms.RandomErasing(),
+                transforms.Normalize(mean, std),
+            ]
+        )
+
+        transform_test = transforms.Compose(
+            [
+                transforms.ToTensor(), 
+                transforms.Normalize(mean, std)
+            ]
+        )
+
+        train_dataset = torchvision.datasets.MNIST(
+            root="./data", train=True, download=True, transform=transform_train
+        )
+        test_dataset = torchvision.datasets.MNIST(
+            root="./data", train=False, download=True, transform=transform_test
+        )
+
+        # Add number of classes and input shape to config
+        config.data.n_classes = 10
+        config.data.input_shape = (1, 28, 28)
+
+    elif dataset == "fmnist":
+
+        mnist = torchvision.datasets.FashionMNIST(root="./data", train=True, download=True)
+        mean = np.mean(np.array(mnist.data / 255.0), axis=(0, 1, 2))  
+        std = np.std(np.array(mnist.data / 255.0), axis=(0, 1, 2))
+
+        transform_train = transforms.Compose(
+            [
+                transforms.RandomCrop(28, padding=4),
+                transforms.RandomHorizontalFlip(),
+                # transforms.RandomRotation(degrees=(0, 30)),     ###
+                transforms.ToTensor(),
+                # transforms.RandomErasing(),
+                transforms.Normalize(mean, std),
+            ]
+        )
+
+        transform_test = transforms.Compose(
+            [
+                transforms.ToTensor(), 
+                transforms.Normalize(mean, std)
+            ]
+        )
+
+        train_dataset = torchvision.datasets.FashionMNIST(
+            root="./data", train=True, download=True, transform=transform_train
+        )
+        test_dataset = torchvision.datasets.FashionMNIST(
+            root="./data", train=False, download=True, transform=transform_test
+        )
+
+        # Add number of classes and input shape to config
+        config.data.n_classes = 10
+        config.data.input_shape = (1, 28, 28)
 
     else:
         raise NotImplementedError(f"Dataloader for {dataset} not implemented.")

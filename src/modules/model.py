@@ -5,8 +5,8 @@ import torch
 import torch.nn as nn
 
 from .module import (
-    ImageToSequence, 
-    TransformerBlock, 
+    ImageToSequence,
+    TransformerBlock,
     Classifier,
 )
 
@@ -19,6 +19,24 @@ class ImageTransformer(nn.Module):
         super().__init__()
 
         n_blocks = config.transformer.n_blocks
+
+        cfg_attention = config.transformer.self_attention
+
+        # self.position_embedding = nn.Embedding(
+        #     num_embeddings=cfg_attention.sequence_length,
+        #     embedding_dim=cfg_attention.n_heads * cfg_attention.head_dim,
+        # )
+        self.position_embedding = nn.Parameter(
+            data=torch.normal(
+                mean=0.0,
+                std=0.02,
+                size=(
+                    cfg_attention.sequence_length,
+                    cfg_attention.n_heads * cfg_attention.head_dim,
+                ),
+            ),
+            requires_grad=True,
+        )
 
         self.image_to_sequence = ImageToSequence(config)
 
@@ -47,7 +65,8 @@ class ImageTransformer(nn.Module):
         print(f"Number of parameters: {sum(n_params)/1e6:.2f} M")
 
     def forward(self, x):
-        x = self.image_to_sequence(x) 
+        x = self.image_to_sequence(x)
+        x = x + self.position_embedding  # TODO: check this
         x = self.transformer_blocks(x)
         x = self.classifier(x)
         return x

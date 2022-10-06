@@ -1,17 +1,16 @@
 ##################
 # ImageTransformer
 ##################
-
 tag: Null
 random_seed: 0
 
 ##############
 # Dataloader #
 ##############
-# cifar10, imagewoof
+# mnist, cifar10, imagewoof
 dataloader:
-  dataset: "cifar10"
-  num_workers: 4
+  dataset: "fmnist"
+  num_workers: 2
 
 ########
 # Data #
@@ -23,18 +22,17 @@ data:
 #########
 # Model #
 #########
-
 transformer:
-  n_blocks: 4
+  n_blocks: 8
   image_to_sequence:
     patch_size: 1
   transformer_block:
     hidden_expansion: 4
     dropout_prob: 0.1
   self_attention:
-    sequence_length: 128
-    n_heads: 8
-    head_dim: 64
+    sequence_length: 32
+    n_heads: 4
+    head_dim: 32
     dropout_prob: 0.1
     use_bias: False
     use_mask: True
@@ -44,21 +42,19 @@ transformer:
 ###########
 # Trainer #
 ###########
-
 trainer:
   device: "gpu"   # gpu, cpu
   n_epochs: 500
-  learning_rate: 8.0e-5
+  learning_rate: 2.0e-4
   weight_decay: 0
   lr_step_size: 200
   lr_gamma: 0.5
-  batch_size: 128
+  batch_size: 512
   grad_norm_clip: 1.0
 
 ###########
 # Summary #
 ###########
-
 summary:
   add_graph: false
   add_sample_batch: false
@@ -75,7 +71,6 @@ checkpoints:
 ###############
 # Directories #
 ###############
-
 dirs:
   data: "data"
   runs: "runs"
