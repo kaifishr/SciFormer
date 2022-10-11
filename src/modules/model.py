@@ -19,8 +19,8 @@ class ImageTransformer(nn.Module):
         """Initializes image transformer."""
         super().__init__()
 
-        self.position_embedding = PositionEmbedding(config)
         self.image_to_sequence = ImageToSequence(config)
+        self.position_embedding = PositionEmbedding(config)
 
         n_blocks = config.transformer.n_blocks
         blocks = [TransformerBlock(config) for _ in range(n_blocks)]

@@ -83,7 +83,7 @@ class PositionEmbedding(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return x + self.embedding(x)
+        return x + self.embedding
 
 
 class MultiHeadSelfAttention(nn.Module):

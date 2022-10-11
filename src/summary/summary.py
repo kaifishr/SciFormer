@@ -3,12 +3,14 @@ summary.py
 
 Script holds methods for Tensorboard.
 """
+import math
 import torch
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 
-from ..config.config import Config
+from src.modules.module import PositionEmbedding, MultiHeadSelfAttention, ImageToSequence
+from src.config.config import Config
 
 
 def add_graph(
@@ -133,3 +135,52 @@ def add_hparams(
     }
 
     writer.add_hparams(hparam_dict, metric_dict)
+
+
+def add_patch_embedding_weights(writer: SummaryWriter, model: nn.Module, global_step: int, n_samples_max: int = 32) -> None:
+    """Adds visualization of patch embedding weights to Tensorboard.
+    """
+    for name, module in model.named_modules():
+        if isinstance(module, ImageToSequence):
+            weight = module.linear.weight.detach().cpu()
+
+            # Rescale
+            x_min = torch.min(weight)
+            x_max = torch.max(weight)
+            weight_rescaled = (weight - x_min) / (x_max - x_min)
+
+            # Reshape
+            height, width = weight.shape
+            dim = int(math.sqrt(width))
+            weight_rescaled = weight_rescaled.reshape(-1, 1, dim, dim)
+
+            # Extract samples
+            n_samples = min(height, n_samples_max)
+            weight_rescaled = weight_rescaled[:n_samples]
+
+            writer.add_images(name, weight_rescaled, global_step, dataformats="NCHW")
+
+
+def add_position_embedding_weights(writer: SummaryWriter, model: nn.Module, global_step: int) -> None:
+    """Adds position embedding visualization to Tensorboard.
+    """
+    for name, module in model.named_modules():
+        if isinstance(module, PositionEmbedding):
+            embedding = module.embedding.detach().cpu()
+            x_min = torch.min(embedding)
+            x_max = torch.max(embedding)
+            embedding_rescaled = (embedding - x_min) / (x_max - x_min)
+            writer.add_image(name, embedding_rescaled, global_step, dataformats="HW")
+
+
+def add_mask_weights(writer: SummaryWriter, model: nn.Module, global_step: int) -> None:
+    """Adds visualization of trainable mask used in self-attention modules to Tensorboard.
+    """
+    for name, module in model.named_modules():
+        if isinstance(module, MultiHeadSelfAttention):
+            if hasattr(module, "mask"):
+                mask = module.mask.detach().cpu()
+                x_min = torch.min(mask)
+                x_max = torch.max(mask)
+                mask_rescaled = (mask - x_min) / (x_max - x_min)
+                writer.add_image(name, mask_rescaled, global_step, dataformats="HW")

@@ -9,7 +9,15 @@ import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
 from ..utils.stats import comp_stats_classification
-from ..summary.summary import add_graph, add_input_samples, add_hist_params, add_hparams
+from ..summary.summary import (
+    add_graph, 
+    add_input_samples, 
+    add_hist_params, 
+    add_hparams, 
+    add_patch_embedding_weights,
+    add_position_embedding_weights, 
+    add_mask_weights, 
+)
 from ..config.config import Config
 
 
@@ -164,5 +172,14 @@ def run_training(model, dataloader, writer, config: Config) -> None:
                 )
                 model_path = os.path.join(config.dirs.weights, model_name)
                 torch.save(model.state_dict(), model_path)
+
+        if (epoch % config.summary.add_patch_embedding_weights.every_n_epochs == 0) or (epoch + 1 == n_epochs):
+            add_patch_embedding_weights(model=model, writer=writer, global_step=epoch)
+
+        if (epoch % config.summary.add_position_embedding_weights.every_n_epochs == 0) or (epoch + 1 == n_epochs):
+            add_position_embedding_weights(model=model, writer=writer, global_step=epoch)
+
+        if (epoch % config.summary.add_mask_weights.every_n_epochs == 0) or (epoch + 1 == n_epochs):
+            add_mask_weights(model=model, writer=writer, global_step=epoch)
 
         print(f"{epoch:04d} {train_loss:.5f} {train_accuracy:.4f}")
