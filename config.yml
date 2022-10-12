@@ -65,10 +65,14 @@ summary:
     every_n_epochs: 10
   add_mask_weights:
     every_n_epochs: 10
-  save_train_stats_every_n_epochs: 1
-  save_test_stats_every_n_epochs: 10
-  add_params_hist_every_n_epochs: 9999
-  save_model_every_n_epochs: -1
+  add_params_hist:
+    every_n_epochs: -1
+  save_train_stats:
+    every_n_epochs: 1
+  save_test_stats:
+    every_n_epochs: 10
+  save_model:
+    every_n_epochs: -1
 
 checkpoints:
   load_model: 0
