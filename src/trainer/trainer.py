@@ -163,15 +163,15 @@ def run_training(model, dataloader, writer, config: Config) -> None:
                 model_path = os.path.join(config.dirs.weights, model_name)
                 torch.save(model.state_dict(), model_path)
 
-        if epoch % config.summary.add_patch_embedding_weights.every_n_epochs > 0:
+        if config.summary.add_patch_embedding_weights.every_n_epochs > 0:
             if (epoch % config.summary.add_patch_embedding_weights.every_n_epochs == 0) or (epoch + 1 == n_epochs):
                 add_patch_embedding_weights(model=model, writer=writer, global_step=epoch)
 
-        if epoch % config.summary.add_position_embedding_weights.every_n_epochs > 0:
+        if config.summary.add_position_embedding_weights.every_n_epochs > 0:
             if (epoch % config.summary.add_position_embedding_weights.every_n_epochs == 0) or (epoch + 1 == n_epochs):
                 add_position_embedding_weights(model=model, writer=writer, global_step=epoch)
 
-        if epoch % config.summary.add_position_embedding_weights.every_n_epochs > 0:
+        if config.summary.add_position_embedding_weights.every_n_epochs > 0:
             if (epoch % config.summary.add_mask_weights.every_n_epochs == 0) or (epoch + 1 == n_epochs):
                 add_mask_weights(model=model, writer=writer, global_step=epoch)
 

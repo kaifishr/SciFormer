@@ -89,7 +89,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
                 transforms.RandomHorizontalFlip(),
                 transforms.RandomVerticalFlip(),
                 # transforms.ColorJitter(brightness=0.5, hue=0.3),
-                transforms.RandomRotation(degrees=(0, 10)),     ###
+                # transforms.RandomRotation(degrees=(0, 10)),     ###
                 transforms.ToTensor(),
                 transforms.RandomErasing(),
                 transforms.Normalize(mean, std),

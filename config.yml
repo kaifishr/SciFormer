@@ -10,7 +10,7 @@ random_seed: 0
 # mnist, fmnist, cifar10, imagewoof
 dataloader:
   dataset: "cifar10"
-  num_workers: 2
+  num_workers: 4
 
 ########
 # Data #
@@ -23,16 +23,16 @@ data:
 # Model #
 #########
 transformer:
-  n_blocks: 4
+  n_blocks: 8
   image_to_sequence:
     patch_size: 1
   transformer_block:
     hidden_expansion: 4
     dropout_prob: 0.2
   self_attention:
-    sequence_length: 64
+    sequence_length: 128
     n_heads: 32
-    head_dim: 4
+    head_dim: 8
     dropout_prob: 0.2
     use_bias: False
     use_mask: True
