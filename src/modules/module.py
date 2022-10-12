@@ -75,12 +75,9 @@ class PositionEmbedding(nn.Module):
         sequence_length = cfg.sequence_length
         embedding_dim = cfg.n_heads * cfg.head_dim
         self.embedding = nn.Parameter(
-            # data=torch.normal(
-            #     mean=0.0,
-            #     std=0.02,
-            #     size=(sequence_length, embedding_dim),
-            # )
-            data=torch.zeros(
+            data=torch.normal(
+                mean=0.0,
+                std=0.02,
                 size=(sequence_length, embedding_dim),
             )
         )
@@ -121,12 +118,9 @@ class MultiHeadSelfAttention(nn.Module):
         # Trainable mask. Let the network decide how the mask should look like.
         if self.use_mask:
             self.mask = nn.Parameter(
-                # data=torch.normal(
-                #     mean=0.0,
-                #     std=0.02,
-                #     size=(self.sequence_length, self.sequence_length),
-                # ),
-                data=torch.zeros(
+                data=torch.normal(
+                    mean=0.0,
+                    std=0.02,
                     size=(self.sequence_length, self.sequence_length),
                 ),
             )
@@ -147,39 +141,22 @@ class MultiHeadSelfAttention(nn.Module):
         values = self.comp_values(x)
 
         # Split keys, queries, and values for processing in different heads.
-        keys = keys.view(-1, self.sequence_length, self.n_heads, self.head_dim)
-        queries = queries.view(-1, self.sequence_length, self.n_heads, self.head_dim)
-        values = values.view(-1, self.sequence_length, self.n_heads, self.head_dim)
+        keys = keys.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
+        queries = queries.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
+        values = values.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
 
-        # Prepare keys, queries, and values for batch matrix mulitplication.
-        keys = keys.transpose(1, 2).reshape(
-            batch_size * self.n_heads, self.sequence_length, self.head_dim
-        )
-        queries = queries.transpose(1, 2).reshape(
-            batch_size * self.n_heads, self.sequence_length, self.head_dim
-        )
-        values = values.transpose(1, 2).reshape(
-            batch_size * self.n_heads, self.sequence_length, self.head_dim
-        )
-
-        # First part of scaled dot-product self-attention
-        # Compute attention weights
-        out = torch.bmm(queries, keys.transpose(1, 2)) / self.embedding_dim**0.5
+        # Scaled dot-product self-attention
+        out = torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / self.embedding_dim ** 0.5
 
         if self.use_mask:
             out = self.mask + out
 
-        out = F.softmax(out, dim=2)
+        out = F.softmax(out, dim=-1)
         out = self.dropout(out)
 
         # Second part of scaled dot-product self-attention.
-        out = torch.bmm(out, values)
-
-        # Return back to original shape.
-        out = out.view(-1, self.n_heads, self.sequence_length, self.head_dim)
-        out = out.transpose(1, 2).reshape(
-            -1, self.sequence_length, self.n_heads * self.head_dim
-        )
+        out = torch.einsum("bhql,blhd->bqhd", [out, values])
+        out = out.reshape(batch_size, self.sequence_length, self.n_heads * self.head_dim)
 
         # Unify all heads in linear transformation.
         out = self.linear(out)

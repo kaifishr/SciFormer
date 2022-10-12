@@ -31,6 +31,10 @@ A simple random search method has been implemented to explore the model in more 
 
 Running a few experiments showed that the model's test accuracy improves with an increased number of attention heads, head dimension, and sequence length (in that order). Adding more attention blocks always resulted in higher test accuracy.
 
+# TODO:
+
+- Add mask to self-attention
+
 # References
 
 [1] An Image is Worth 16x16 Words: https://arxiv.org/pdf/2010.11929.pdf
