@@ -137,7 +137,7 @@ def add_hparams(
     writer.add_hparams(hparam_dict, metric_dict)
 
 
-def add_patch_embedding_weights(writer: SummaryWriter, model: nn.Module, global_step: int, n_samples_max: int = 32) -> None:
+def add_patch_embedding_weights(writer: SummaryWriter, model: nn.Module, global_step: int, n_samples_max: int = 128) -> None:
     """Adds visualization of patch embedding weights to Tensorboard.
     """
     for name, module in model.named_modules():

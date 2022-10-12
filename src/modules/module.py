@@ -75,9 +75,12 @@ class PositionEmbedding(nn.Module):
         sequence_length = cfg.sequence_length
         embedding_dim = cfg.n_heads * cfg.head_dim
         self.embedding = nn.Parameter(
-            data=torch.normal(
-                mean=0.0,
-                std=0.02,
+            # data=torch.normal(
+            #     mean=0.0,
+            #     std=0.02,
+            #     size=(sequence_length, embedding_dim),
+            # )
+            data=torch.zeros(
                 size=(sequence_length, embedding_dim),
             )
         )
@@ -118,12 +121,14 @@ class MultiHeadSelfAttention(nn.Module):
         # Trainable mask. Let the network decide how the mask should look like.
         if self.use_mask:
             self.mask = nn.Parameter(
-                data=torch.normal(
-                    mean=0.0,
-                    std=0.02,
+                # data=torch.normal(
+                #     mean=0.0,
+                #     std=0.02,
+                #     size=(self.sequence_length, self.sequence_length),
+                # ),
+                data=torch.zeros(
                     size=(self.sequence_length, self.sequence_length),
                 ),
-                requires_grad=True,
             )
 
         self.linear = nn.Linear(

@@ -35,10 +35,8 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         with tarfile.open(cwd + "/data/imagewoof-160.tgz", "r:gz") as tar:
             tar.extractall(path=cwd + "/data")
 
-        avg = (0.4914, 0.4822, 0.4465)
+        mean = (0.4914, 0.4822, 0.4465)
         std = (0.2023, 0.1994, 0.2010)
-
-        stats = (avg, std)
 
         train_transform = transforms.Compose(
             [
@@ -49,7 +47,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
                 transforms.ColorJitter(brightness=0.5, hue=0.3),
                 transforms.RandomRotation(degrees=(0, 45)),
                 transforms.ToTensor(),
-                transforms.Normalize(*stats, inplace=True),
+                transforms.Normalize(mean, std, inplace=True),
             ]
         )
 
@@ -58,7 +56,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
                 transforms.Resize(128),
                 transforms.CenterCrop(size=(128, 128)),
                 transforms.ToTensor(),
-                transforms.Normalize(*stats),
+                transforms.Normalize(mean, std),
             ]
         )
 
@@ -89,8 +87,9 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
             [
                 transforms.RandomCrop(32, padding=4),
                 transforms.RandomHorizontalFlip(),
+                transforms.RandomVerticalFlip(),
                 # transforms.ColorJitter(brightness=0.5, hue=0.3),
-                # transforms.RandomRotation(degrees=(0, 30)),     ###
+                transforms.RandomRotation(degrees=(0, 10)),     ###
                 transforms.ToTensor(),
                 transforms.RandomErasing(),
                 transforms.Normalize(mean, std),
@@ -124,7 +123,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         transform_train = transforms.Compose(
             [
                 transforms.RandomCrop(28, padding=4),
-                # transforms.RandomRotation(degrees=(0, 30)),     ###
+                transforms.RandomRotation(degrees=(0, 20)),     ###
                 transforms.ToTensor(),
                 # transforms.RandomErasing(),
                 transforms.Normalize(mean, std),
@@ -159,7 +158,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
             [
                 transforms.RandomCrop(28, padding=4),
                 transforms.RandomHorizontalFlip(),
-                # transforms.RandomRotation(degrees=(0, 30)),     ###
+                transforms.RandomRotation(degrees=(0, 20)),     ###
                 transforms.ToTensor(),
                 # transforms.RandomErasing(),
                 transforms.Normalize(mean, std),

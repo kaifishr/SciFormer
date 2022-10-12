@@ -7,9 +7,9 @@ random_seed: 0
 ##############
 # Dataloader #
 ##############
-# mnist, cifar10, imagewoof
+# mnist, fmnist, cifar10, imagewoof
 dataloader:
-  dataset: "fmnist"
+  dataset: "cifar10"
   num_workers: 2
 
 ########
@@ -23,17 +23,17 @@ data:
 # Model #
 #########
 transformer:
-  n_blocks: 6
+  n_blocks: 4
   image_to_sequence:
     patch_size: 1
   transformer_block:
-    hidden_expansion: 2
-    dropout_prob: 0.1
+    hidden_expansion: 4
+    dropout_prob: 0.2
   self_attention:
-    sequence_length: 32
-    n_heads: 4
-    head_dim: 32
-    dropout_prob: 0.1
+    sequence_length: 64
+    n_heads: 32
+    head_dim: 4
+    dropout_prob: 0.2
     use_bias: False
     use_mask: True
   classifier:
@@ -45,11 +45,11 @@ transformer:
 trainer:
   device: "gpu"   # gpu, cpu
   n_epochs: 500
-  learning_rate: 1.0e-4
+  learning_rate: 4.0e-4
   weight_decay: 0
   lr_step_size: 200
   lr_gamma: 0.5
-  batch_size: 512
+  batch_size: 64
   grad_norm_clip: 1.0
 
 ###########
@@ -57,7 +57,7 @@ trainer:
 ###########
 summary:
   add_graph: false
-  add_sample_batch: false
+  add_sample_batch: true
   add_hparams: false
   add_patch_embedding_weights:
     every_n_epochs: 10
