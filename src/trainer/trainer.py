@@ -112,9 +112,6 @@ def run_training(model, dataloader, writer, config: Config) -> None:
 
             # Backpropagation
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(
-                model.parameters(), config.trainer.grad_norm_clip
-            )
 
             # Gradient descent
             optimizer.step()

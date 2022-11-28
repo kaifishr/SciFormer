@@ -1,4 +1,6 @@
 # ImageTransformer
+# Transformer
+# SciFormer
 
 Experimental minimal multi-head self-attention transformer architecture for image classification implemented in PyTorch for education purposes.
 
@@ -11,6 +13,15 @@ The `ImageToSequence` module transforms image data of shape `(channels, height, 
 A sequence of stacked `TransformerBlock`s consisting of a `MultiHeadSelfAttention` module followed by a standard fully connected neural network.
 
 Finally, a `Classifier` module takes the output of the last `TransformerBlock` and applies a linear transformation to the network's final prediction.
+
+# Weight Visualization
+
+## Patch Embedding
+
+## Positional Embedding
+
+## Attention Mask 
+
 
 # Random search
 
