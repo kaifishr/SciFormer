@@ -1,8 +1,7 @@
-# ImageTransformer
 # Transformer
 # SciFormer
 
-Minimal multi-head self-attention transformer architecture implemented in PyTorch. Probably useful for prototyping and education purposes.
+Minimal multi-head self-attention transformer architecture implemented in PyTorch. Probably useful for rapid prototyping and education purposes.
 
 # Transformer Network
 
@@ -48,7 +47,7 @@ This shows, that self-attention is linear operation between the input tokens $X$
 
 This image transformer implementation uses a simple configuration of stacked transformer blocks without encoder-decoder structure and consists of three main blocks: 
 
-The `ImageToSequence` module transforms image data of shape `(channels, height, width)` to a sequence of token embeddings of shape `(sequence_length, embedding_dim)`. The image to sequence transformation is implemented using a `Conv2d` operation as patch embedding with `kernel_size` = `stride`. Patch embedding downsamples the image and allows transformer architecutes even for images of high resolution. The `ImageToSequence` module is purely linear.
+The `ImageToSequence` module transforms image data of shape `(channels, height, width)` to a sequence of token embeddings of shape `(sequence_length, embedding_dim)`. The image to sequence transformation is implemented using a `Conv2d` operation as patch embedding with `kernel_size` = `stride`. Patch embedding downsamples the image and allows transformer architectures even for images of high resolution. The `ImageToSequence` module is purely linear.
 
 A sequence of stacked `TransformerBlock`s consisting of a `MultiHeadSelfAttention` module followed by a standard fully connected neural network.
 
@@ -85,10 +84,14 @@ Running a few experiments showed that the model's test accuracy improves with an
 # TODO:
 
 - Add mask to self-attention
+- Add option to have trainable embedding / mask
+- Make attention fully "in-context"
+    - Use activations to create bias terms
+    - $b = W_x x$
 
 # References
 
-[1] An Image is Worth 16x16 Words: https://arxiv.org/pdf/2010.11929.pdf
+[1] *An Image is Worth 16x16 Words*: https://arxiv.org/pdf/2010.11929.pdf
 
 # License
 
