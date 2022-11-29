@@ -1,13 +1,13 @@
-# Transformer
-# SciFormer
+# **SciFormer**
 
-Minimal multi-head self-attention transformer architecture implemented in PyTorch. Probably useful for rapid prototyping and education purposes.
+Minimal multi-head self-attention transformer architecture with experimental features implemented in PyTorch. Probably useful for rapid prototyping and educational purposes.
+
 
 # Transformer Network
 
 ## Self-attention
 
-At its core, the self-attention (SA) mechanism is a sequence-to-sequence operation.
+The self-attention mechanism is the fundamental operations of transformer neural networks. At its core, the self-attention mechanism is a sequence-to-sequence operation.
 
 As an aside, self-attention is probably the critical component that allow transformer architecture to demonstrate the ability of "in-context" learning during inference. This means that transformer neural networks learn from the activations at runtime without having to update their weights. Aside end.
 
@@ -42,6 +42,21 @@ $$Y = WX^\top = (X^\top X) X^\top$$
 
 This shows, that self-attention is linear operation between the input tokens $X$ and output tokens $Y$ and a non-linear operation via $W$.
 
+From the self-attention formulation above we can see, that the attention mechanism has no problems looking far back into the input sequence as every input token has the same distance to every output token. 
+
+As the self-attention mechanism at its core is a weighted sum over the input vectors $\mathbf{x}_i$, the self-attention mechanism does not see the input tokens as a sequence but rather as a set. This means, that self-attention is permutation equivariant, as the position of the input token in the sequence does not change the output of the self-attention layer. Therefore it holds that
+
+$$\text{permutation}(\text{selfAttention}(\mathbf{x})) = \text{selfAttention}(\text{permutation}(\mathbf{x}))$$
+
+In which order the sequence is to be understood, can be achieved by encoding the sequential structure into the token embeddings using positional embeddings.
+
+> TODO: Why is positional embedding only used once?
+
+# Transformer Types
+
+## TextTransformer
+
+... or autoregressive models.
 
 ## ImageTransformer
 
