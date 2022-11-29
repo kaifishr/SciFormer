@@ -19,7 +19,7 @@ The SA mechanism processes token sequences in parallel and can learns dependenci
 
 The most basic version of self-attention is a weighted sum over the input vectors $\{\mathbf{x}_1, \cdots, \mathbf{x}_n\}$ resulting in one self-attention output $\mathbf{y}_i$ for every input $\mathbf{x}_i$.
 
-$$\mathbf{y}_i = \sum_{j=1}^n w_{ij} \mathbf{x}_j$$
+$$\mathbf{y}_{i} = \sum_{j=1}^{n} w_{ij} \mathbf{x}_j$$
 
 The scalar weight $w_{ij}$ in the weighted sum above is a function derived from the input vectors $\mathbf{x}_i$ and $\mathbf{x}_j$. A simple way to compute the weight parameter is to use the dot-product
 
