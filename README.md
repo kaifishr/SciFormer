@@ -40,7 +40,6 @@ Modern transformer implementations apply the *Softmax* operation row-wise to the
 
 $$w'_{ij} = \frac{\mathbf{x}_i^\top\mathbf{x}_j}{\sqrt{k}}$$
 
-
 This leads to
 
 $$w_{ij} = \frac{\exp(w'_{ij})}{\sum_{j=1}^k \exp(w'_{ij})}$$
@@ -92,6 +91,7 @@ $$
 \mathbf{v}_i = W_V \mathbf{x}_i + \mathbf{b}_V
 $$
 
+
 ### Multi-head Self-Attention
 
 The above formulation represents single-head self-attention, as the entire sequence $X$ is fed into the weight matrices $W_Q$, $W_K$, and $W_V$ to compute a new sequence $Y$. However, the computation can be split into different heads that perform the self-attention operation in parallel. This approach is intended to result in a network that models different relations between input tokens.
@@ -107,7 +107,31 @@ $$X = \{X_{[:,0:k/h]}, \cdots, X_{[:,k-k/h:k]}\}$$
 
 ## TextTransformer
 
-Autoregressive models predict the next token in a sequence such as a letter or a word. For this to work, the attention mechanism needs to be causal. This is achieved by removing the forward connections in the self-attention operations. Removing the forward connections is also known as masking.
+Autoregressive models predict the next token in a sequence such as, for example, a letter or a word. For this to work, the attention mechanism needs to be causal. This is achieved by removing the forward connections in the self-attention operations which is also known as masking. To remove the forward connections, we can add a mask of minus infinity to the entries above the diagonal.
+
+$$W' = X X^\top$$
+
+$$
+\left(\begin{array}{cc} 
+0.8944272 & 0.4472136\\
+-0.4472136 & -0.8944272
+\end{array}\right)
+\left(\begin{array}{cc} 
+10 & 0\\ 
+0 & 5
+\end{array}\right)
+$$ 
+
+$$
+\begin{pmatrix}
+0.8944272 & 0.4472136\\
+-0.4472136 & -0.8944272
+\end{pmatrix}
+\begin{pmatrix}
+10 & 0\\ 
+0 & 5
+\end{pmatrix}
+$$
 
 
 ## ImageTransformer
@@ -119,6 +143,7 @@ The `ImageToSequence` module transforms image data of shape `(channels, height, 
 A sequence of stacked `TransformerBlock`s consisting of a `MultiHeadSelfAttention` module followed by a standard fully connected neural network.
 
 Finally, a `Classifier` module takes the output of the last `TransformerBlock` and applies a linear transformation to the network's final prediction.
+
 
 # Weight Visualization
 
