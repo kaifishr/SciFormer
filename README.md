@@ -9,7 +9,7 @@ Minimal multi-head self-attention transformer architecture with experimental fea
 
 The self-attention mechanism is the fundamental operations of transformer neural networks. At its core, the self-attention mechanism is a sequence-to-sequence operation.
 
-As an aside, self-attention is probably the critical component that allow transformer architecture to demonstrate the ability of "in-context" learning during inference. This means that transformer neural networks learn from the activations at runtime without having to update their weights. Aside end.
+As an aside, self-attention is probably the critical component that allows the transformer architecture to demonstrate the ability of "in-context" learning during inference. This means that transformer neural networks learn from the activations at runtime without having to update their weights. It is assumed that large transformer-based language models discover during their training to implicitly implement other models in their hidden activations. Prompting can therefore be a kind of fine-tuning that is running inside of a language model. Aside end.
 
 In a neural network, a self-attention module is a sequence-to-sequence layer mapping a sequence of input tokens $X = \{\mathbf{x}_1, \cdots, \mathbf{x}_n\}$ to a sequence of output tokens $Y = \{\mathbf{y_1}, \cdots, \mathbf{y}_n\}$. Here, $X$ and $Y$ represent matrices of the same dimension $n \times k$ where $n$ represents the sequence length and $k$ the token dimension.
 
@@ -25,22 +25,27 @@ The scalar weight $w_{ij}$ in the weighted sum above is a function derived from 
 
 $$w'_{ij} = f(\mathbf{x}_i,\mathbf{x}_j) = \sum_{l=1}^k x_{il}x_{jl} = \mathbf{x}_i^\top\mathbf{x}_j$$
 
-However, we are not finished yet. Modern transformer implementations apply the softmax operation row-wise to the computed weight matrix $W$. This leads to
+After computing the dot product for all input tokens, we end up with a weight matrix $W$ of dimensions $n \times n$. This shows, that the computational complexity of self-attention layers with this kind of weight computation is of the order of $\mathcal{O}(n^2)$. Thus, the self-attention operation is a primary bottle neck for transformer networks processing very long sequences.
+
+Modern transformer implementations apply the *Softmax* operation row-wise to the computed weight matrix $W$. As the *Softmax* operation is sensitive to large values leading to potentially small gradients of the softmax function, slowing down learning considerably, we normalize the dot-product by the square root of the input dimension $k$ to constraint the distribution of the attention weights $W$ to have a standard deviation of 1. Thus we compute
+
+$$w'_{ij} = \frac{\mathbf{x}_i^\top\mathbf{x}_j}{\sqrt{k}}$$
+
+
+This leads to
 
 $$w_{ij} = \frac{\exp(w'_{ij})}{\sum_{j=1}^k \exp(w'_{ij})}$$
 
 > TODO: $$w_{ij} = \frac{w'_{ij} - \mu_{w[i,:]}}{\sigma_{w[i,:]}}$$
 > ES inspired.
 
-From how we compute the weights $w_{ij}$ for each input token, it is apparent, that the computational complexity of self-attention layers with this kind of weight computation is of the order of $\mathcal{O}(n^2)$. This already shows, that for transformer networks processing very long sequences, the self-attention operation is a primary bottle neck.
-
 It should also be noticed, that, so far, no trainable parameters have been used in the operations outlined above.
 
 The basic version of self-attention can also be expressed in matrix notation
 
-$$Y = WX^\top = (X^\top X) X^\top$$
+$$Y = WX^\top = (\textcolor{red}{X^\top} \textcolor{green}{X}) \textcolor{blue}{X^\top}$$
 
-This shows, that self-attention is linear operation between the input tokens $X$ and output tokens $Y$ and a non-linear operation via $W$.
+This shows, that self-attention is linear operation between the input tokens $X$ and output tokens $Y$ and a non-linear operation via $W$. The three components on the right hand side are also known as the <span style="color:red">*query*</span>, <span style="color:green">*key*</span>, and <span style="color:blue">*value*</span>. In contrast to the basic attention mechanism, the *key*, *query*, and *value* come from the same set of input tokens $X$.
 
 From the self-attention formulation above we can see, that the attention mechanism has no problems looking far back into the input sequence as every input token has the same distance to every output token. 
 
@@ -50,7 +55,49 @@ $$\text{permutation}(\text{selfAttention}(\mathbf{x})) = \text{selfAttention}(\t
 
 In which order the sequence is to be understood, can be achieved by encoding the sequential structure into the token embeddings using positional embeddings.
 
-> TODO: Why is positional embedding only used once?
+> TODO: Use positional embedding in each attention block?
+
+### Attention as a Soft Dictionary
+
+To get a better understanding of the *query*, *key*, and *value* nomenclature in the context of self-attention, the attention mechanism can be seen as a soft form of a dictionary. Let's consider the following example with a Python dictionary:
+
+$$\texttt{d = \{"a": 1, "b": 2\}}$$
+
+Here, the dictionary consists of two key-value pairs, where $\texttt{a}$ and $\texttt{b}$ are the keys to the values $\texttt{1}$ and $\texttt{2}$. The request for accessing the data stored in the dictionary is called a query. We access the value of a dictionary using the key associated with that value. The following line shows a query requesting data using key $\texttt{a}$
+
+$$\texttt{d["a"] = 1}$$
+
+The example above show a "hard" dictionary, as the query gets you exactly the value that is associated with the key. The attention mechanism, on the other hand, allows for a key to match the query to some extend as determined by the respective dot product. Thus, a mixture of all values is returned (therefore soft dictionary) with softmax normalized dot products as mixture weights.
+
+It should also be noted, that in general a query can either be a request for retrieving data or to perform an action on the data, or both.
+
+### Trainable / Parameterized Self-Attention
+
+As already mentioned, there are so far no trainable parameters in the self-attention operations outlined above. Introducing parameters that allow obtain trainable representations of *query* $\mathbf{q}$, *key* $\mathbf{k}$, and *value* $\mathbf{v}$, allows the attention mechanism to be more expressive and to learn more powerful representations of the input sequence.
+
+To achieve this, we use weight matrices $W_Q$, $W_K$, and $W_V$ of dimension $k \times k$ for transforming every $\mathbf{x}_i$ linearly to get $\mathbf{q}_i$, $\mathbf{k}_i$, and $\mathbf{v}_i$
+
+$$
+\mathbf{q}_i = W_Q \mathbf{x}_i + \mathbf{b}_Q \\
+\mathbf{k}_i = W_K \mathbf{x}_i + \mathbf{b}_K \\
+\mathbf{v}_i = W_V \mathbf{x}_i + \mathbf{b}_V
+$$
+
+### Multi-head Self-Attention
+
+The above formulation represents single-head self-attention, as the entire sequence $X$ is fed into the weight matrices $W_Q$, $W_K$, and $W_V$ to compute a new sequence $Y$. However, the computation can be split into different heads that perform the self-attention operation in parallel. This approach is intended to result in a network that models different relations between input tokens.
+
+More concretely, this means that we split the input sequence $X$ into $h$ chunks of same size:
+
+$$X = \{X_1, \cdots, X_h\}$$
+
+with 
+
+$$
+X_1 = \{ \mathbf{x}_1, \cdots, \mathbf{x}_i\} \\
+\vdots \\
+X_h = \{ \mathbf{x}_j, \cdots, \mathbf{x}_n\}
+$$
 
 # Transformer Types
 
