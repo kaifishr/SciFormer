@@ -2,8 +2,17 @@
 
 Minimal multi-head self-attention transformer architecture with experimental features implemented in PyTorch. Probably useful for rapid prototyping and educational purposes.
 
+<p align="center">
+    <img src="./docs/" height="320">
+</p>
 
 # Transformer Network
+
+
+## Transformer Neural Network
+
+Transformer neural networks are sequence-based models that use at its core the self-attention mechanism to propagate information between the tokens present in the input sequence. Tokens represent basic units that can be words or letter in case of a language model, pixels or patch embeddings in case of an vision transformer to name just a few possibilities.
+
 
 ## Self-attention
 
@@ -87,23 +96,19 @@ $$
 
 The above formulation represents single-head self-attention, as the entire sequence $X$ is fed into the weight matrices $W_Q$, $W_K$, and $W_V$ to compute a new sequence $Y$. However, the computation can be split into different heads that perform the self-attention operation in parallel. This approach is intended to result in a network that models different relations between input tokens.
 
-More concretely, this means that we split the input sequence $X$ into $h$ chunks of same size:
+There are different flavors of how multi-head self-attention. One approach is to run through the entire scaled dot-product attention multiple times in parallel. Other approaches split the input sequence $X$ into $h$ chunks of the same size before running the attention on the subsequences in parallel. Running the attention on subsequences of the input, there a smaller weight matrices $W_Q$, $W_K$, and $W_V$ involved, allowing to run multi-head self-attention at about the same costs as single-head self-attention.
 
-$$X = \{X_1, \cdots, X_h\}$$
+More concretely, this means that we split the input embedding dimension $n$ of $X$ into $h$ chunks of same size:
 
-with 
+$$X = \{X_{[:,0:k/h]}, \cdots, X_{[:,k-k/h:k]}\}$$
 
-$$
-X_1 = \{ \mathbf{x}_1, \cdots, \mathbf{x}_i\} \\
-\vdots \\
-X_h = \{ \mathbf{x}_j, \cdots, \mathbf{x}_n\}
-$$
 
 # Transformer Types
 
 ## TextTransformer
 
-... or autoregressive models.
+Autoregressive models predict the next token in a sequence such as a letter or a word. For this to work, the attention mechanism needs to be causal. This is achieved by removing the forward connections in the self-attention operations. Removing the forward connections is also known as masking.
+
 
 ## ImageTransformer
 
