@@ -191,7 +191,13 @@ Running a few experiments showed that the model's test accuracy improves with an
 
 # References
 
-[1] *An Image is Worth 16x16 Words*: https://arxiv.org/pdf/2010.11929.pdf
+[*Attention Is All You Need*](https://arxiv.org/pdf/1706.03762.pdf)
+
+[*Transformers from scratch*](https://peterbloem.nl/blog/transformers)
+
+[*Attention? Attention!*](https://lilianweng.github.io/posts/2018-06-24-attention/)
+
+[*An Image is Worth 16x16 Words*](https://arxiv.org/pdf/2010.11929.pdf)
 
 # License
 
