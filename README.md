@@ -65,6 +65,7 @@ In which order the sequence is to be understood, can be achieved by encoding the
 
 > TODO: Use positional embedding in each attention block?
 
+
 ### Attention as a Soft Dictionary
 
 To get a better understanding of the *query*, *key*, and *value* nomenclature in the context of self-attention, the attention mechanism can be seen as a soft form of a dictionary. Let's consider the following example with a Python dictionary:
@@ -78,6 +79,7 @@ $$\texttt{d["a"] = 1}$$
 The example above show a "hard" dictionary, as the query gets you exactly the value that is associated with the key. The attention mechanism, on the other hand, allows for a key to match the query to some extend as determined by the respective dot product. Thus, a mixture of all values is returned (therefore soft dictionary) with softmax normalized dot products as mixture weights.
 
 It should also be noted, that in general a query can either be a request for retrieving data or to perform an action on the data, or both.
+
 
 ### Trainable / Parameterized Self-Attention
 
@@ -101,6 +103,7 @@ There are different flavors of how multi-head self-attention. One approach is to
 More concretely, this means that we split the input embedding dimension $n$ of $X$ into $h$ chunks of same size:
 
 $$X = \{X_{[:,0:k/h]}, \cdots, X_{[:,k-k/h:k]}\}$$
+
 
 ### Masking
 
@@ -129,7 +132,7 @@ $$
 
 ### Encoding Sequential Structure
 
-The meaning of words often depends on their position in a sentence. As the attention mechanism is permutation equivariant, we need to tell the attention module about the structure of the input sequence. There are different techniques to achieve this. Two simple methods are
+The meaning of words often depends on their position in a sentence. As the attention mechanism is permutation equivariant, we need to tell the attention module about the structure of the input sequence. There are different techniques that allow the network to become aware of the words position. Two simple methods are
 
 - **Position embedding** works by adding an embedding vector to every embedded token of the input sequence. However, this approach fixes the sequence length that can be processed by the model.
 
@@ -138,9 +141,11 @@ The meaning of words often depends on their position in a sentence. As the atten
 
 # Transformer Types
 
+
 ## TextTransformer
 
-...
+Transformer neural networks used for text generation are autoregressive models. However, autoregressive models are not limited to generating text but can also used to generate speech, music to name but a few. An autoregressive model receives a sequence of input tokens and predicts a probability distribution over the next index in the sequence.
+
 
 ## ImageTransformer
 
@@ -155,9 +160,12 @@ Finally, a `Classifier` module takes the output of the last `TransformerBlock` a
 
 # Weight Visualization
 
+
 ## Patch Embedding
 
+
 ## Positional Embedding
+
 
 ## Attention Mask 
 

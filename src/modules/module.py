@@ -67,6 +67,7 @@ class PositionEmbedding(nn.Module):
         sequence_length:
         embedding_dim:
     """
+
     def __init__(self, config: Config) -> None:
         """Initializes ImageToSequence module."""
         super().__init__()
@@ -142,11 +143,17 @@ class MultiHeadSelfAttention(nn.Module):
 
         # Split keys, queries, and values for processing in different heads.
         keys = keys.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
-        queries = queries.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
-        values = values.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
+        queries = queries.view(
+            batch_size, self.sequence_length, self.n_heads, self.head_dim
+        )
+        values = values.view(
+            batch_size, self.sequence_length, self.n_heads, self.head_dim
+        )
 
         # Scaled dot-product self-attention
-        out = torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / self.embedding_dim ** 0.5
+        out = (
+            torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / self.embedding_dim**0.5
+        )
 
         if self.use_mask:
             out = self.mask + out
@@ -156,7 +163,9 @@ class MultiHeadSelfAttention(nn.Module):
 
         # Second part of scaled dot-product self-attention.
         out = torch.einsum("bhql,blhd->bqhd", [out, values])
-        out = out.reshape(batch_size, self.sequence_length, self.n_heads * self.head_dim)
+        out = out.reshape(
+            batch_size, self.sequence_length, self.n_heads * self.head_dim
+        )
 
         # Unify all heads in linear transformation.
         out = self.linear(out)
