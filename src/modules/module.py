@@ -152,13 +152,11 @@ class MultiHeadSelfAttention(nn.Module):
         keys = self.comp_keys(x)
         queries = self.comp_queries(x)
         values = self.comp_values(x)
-        print(f"{keys.shape = }")
 
         # Split keys, queries, and values for processing in different heads.
         keys = keys.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
         queries = queries.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
         values = values.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
-        print(f"{keys.shape = }")
 
         # Scaled dot-product self-attention
         out = torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / self.embedding_dim ** 0.5
