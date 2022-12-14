@@ -66,9 +66,13 @@ class PositionEmbedding(nn.Module):
     Attributes:
         sequence_length:
         embedding_dim:
+
+    TODO
+        - Add is_trainable.
+        - Add other embedding types.
     """
     def __init__(self, config: Config) -> None:
-        """Initializes ImageToSequence module."""
+        """Initializes PositionEmbedding."""
         super().__init__()
 
         cfg = config.transformer.self_attention
@@ -117,13 +121,22 @@ class MultiHeadSelfAttention(nn.Module):
 
         # Trainable mask. Let the network decide how the mask should look like.
         if self.use_mask:
+            # Additive trainable mask.
             self.mask = nn.Parameter(
-                data=torch.normal(
-                    mean=0.0,
-                    std=0.02,
-                    size=(self.sequence_length, self.sequence_length),
-                ),
+                data=torch.zeros(size=(self.sequence_length, self.sequence_length)),
+                requires_grad=True
             )
+            # Multiplicative trainable mask.
+            self.mask = nn.Parameter(
+                data=torch.ones(size=(self.sequence_length, self.sequence_length)),
+                requires_grad=True
+            )
+            # Trainable causal mask, because why not.
+            self.mask = nn.Parameter(
+                data=torch.tril(torch.ones(size=(self.sequence_length, self.sequence_length))),
+                requires_grad=False
+            )
+
 
         self.linear = nn.Linear(
             in_features=self.embedding_dim, out_features=self.embedding_dim, bias=bias
@@ -139,17 +152,21 @@ class MultiHeadSelfAttention(nn.Module):
         keys = self.comp_keys(x)
         queries = self.comp_queries(x)
         values = self.comp_values(x)
+        print(f"{keys.shape = }")
 
         # Split keys, queries, and values for processing in different heads.
         keys = keys.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
         queries = queries.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
         values = values.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
+        print(f"{keys.shape = }")
 
         # Scaled dot-product self-attention
         out = torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / self.embedding_dim ** 0.5
 
         if self.use_mask:
-            out = self.mask + out
+            # out = self.mask + out
+            # out = self.mask * out
+            out.masked_fill_(self.mask == 0, float("-inf"))
 
         out = F.softmax(out, dim=-1)
         out = self.dropout(out)
