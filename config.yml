@@ -23,16 +23,16 @@ data:
 # Model #
 #########
 transformer:
-  n_blocks: 4
+  n_blocks: 16
   image_to_sequence:
     patch_size: 1
   transformer_block:
-    hidden_expansion: 4
+    hidden_expansion: 2
     dropout_prob: 0
   self_attention:
-    sequence_length: 4
-    n_heads: 2
-    head_dim: 4  # embedding dimension is n_heads * head_dim
+    sequence_length: 32
+    n_heads: 4
+    head_dim: 8  # embedding dimension is n_heads * head_dim
     dropout_prob: 0
     use_bias: False
     use_mask: True
@@ -49,7 +49,7 @@ transformer:
 trainer:
   device: "gpu"   # gpu, cpu
   n_epochs: 500
-  batch_size: 2
+  batch_size: 256
   weight_decay: 0
   learning_rate: 2.0e-4
   # learning_rate_step_every: 200

@@ -10,13 +10,13 @@ from torch.utils.tensorboard import SummaryWriter
 
 from ..utils.stats import comp_stats_classification
 from ..summary.summary import (
-    add_graph, 
-    add_input_samples, 
-    add_hist_params, 
-    add_hparams, 
+    add_graph,
+    add_input_samples,
+    add_hist_params,
+    add_hparams,
     add_patch_embedding_weights,
-    add_position_embedding_weights, 
-    add_mask_weights, 
+    add_position_embedding_weights,
+    add_mask_weights,
 )
 from ..config.config import Config
 
@@ -133,43 +133,76 @@ def run_training(model, dataloader, writer, config: Config) -> None:
         train_accuracy = running_accuracy / running_counter
 
         if config.summary.save_train_stats.every_n_epochs > 0:
-            if (epoch % config.summary.save_train_stats.every_n_epochs == 0) or (epoch + 1 == n_epochs):
+            if (epoch % config.summary.save_train_stats.every_n_epochs == 0) or (
+                epoch + 1 == n_epochs
+            ):
                 writer.add_scalar("train_loss", train_loss, global_step=n_update_steps)
                 writer.add_scalar(
                     "train_accuracy", train_accuracy, global_step=n_update_steps
                 )
 
         if config.summary.save_test_stats.every_n_epochs > 0:
-            if (epoch % config.summary.save_test_stats.every_n_epochs == 0) or (epoch + 1 == n_epochs):
+            if (epoch % config.summary.save_test_stats.every_n_epochs == 0) or (
+                epoch + 1 == n_epochs
+            ):
                 test_loss, test_accuracy = comp_stats_classification(
-                    model=model, criterion=criterion, data_loader=testloader, device=device
+                    model=model,
+                    criterion=criterion,
+                    data_loader=testloader,
+                    device=device,
                 )
                 writer.add_scalar("test_loss", test_loss, global_step=n_update_steps)
-                writer.add_scalar("test_accuracy", test_accuracy, global_step=n_update_steps)
+                writer.add_scalar(
+                    "test_accuracy", test_accuracy, global_step=n_update_steps
+                )
 
                 if config.summary.add_hparams:
-                    add_hparams(writer, config, train_loss, train_accuracy, test_loss, test_accuracy)
+                    add_hparams(
+                        writer,
+                        config,
+                        train_loss,
+                        train_accuracy,
+                        test_loss,
+                        test_accuracy,
+                    )
 
         if config.summary.add_params_hist.every_n_epochs > 0:
-            if (epoch % config.summary.add_params_hist_every_n_epochs == 0) or (epoch + 1 == n_epochs):
+            if (epoch % config.summary.add_params_hist_every_n_epochs == 0) or (
+                epoch + 1 == n_epochs
+            ):
                 add_hist_params(model=model, writer=writer, global_step=epoch)
 
         if config.summary.save_model.every_n_epochs > 0:
-            if (epoch % config.summary.save_model.every_n_epochs == 0) or (epoch + 1 == n_epochs):
-                model_name = (f"{dataset}_epoch_{epoch:04d}{f'_{tag}' if tag else ''}.pth")
+            if (epoch % config.summary.save_model.every_n_epochs == 0) or (
+                epoch + 1 == n_epochs
+            ):
+                model_name = (
+                    f"{dataset}_epoch_{epoch:04d}{f'_{tag}' if tag else ''}.pth"
+                )
                 model_path = os.path.join(config.dirs.weights, model_name)
                 torch.save(model.state_dict(), model_path)
 
         if config.summary.add_patch_embedding_weights.every_n_epochs > 0:
-            if (epoch % config.summary.add_patch_embedding_weights.every_n_epochs == 0) or (epoch + 1 == n_epochs):
-                add_patch_embedding_weights(model=model, writer=writer, global_step=epoch)
+            if (
+                epoch % config.summary.add_patch_embedding_weights.every_n_epochs == 0
+            ) or (epoch + 1 == n_epochs):
+                add_patch_embedding_weights(
+                    model=model, writer=writer, global_step=epoch
+                )
 
         if config.summary.add_position_embedding_weights.every_n_epochs > 0:
-            if (epoch % config.summary.add_position_embedding_weights.every_n_epochs == 0) or (epoch + 1 == n_epochs):
-                add_position_embedding_weights(model=model, writer=writer, global_step=epoch)
+            if (
+                epoch % config.summary.add_position_embedding_weights.every_n_epochs
+                == 0
+            ) or (epoch + 1 == n_epochs):
+                add_position_embedding_weights(
+                    model=model, writer=writer, global_step=epoch
+                )
 
         if config.summary.add_position_embedding_weights.every_n_epochs > 0:
-            if (epoch % config.summary.add_mask_weights.every_n_epochs == 0) or (epoch + 1 == n_epochs):
+            if (epoch % config.summary.add_mask_weights.every_n_epochs == 0) or (
+                epoch + 1 == n_epochs
+            ):
                 add_mask_weights(model=model, writer=writer, global_step=epoch)
 
         print(f"{epoch:04d} {train_loss:.5f} {train_accuracy:.4f}")

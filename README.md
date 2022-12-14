@@ -155,6 +155,7 @@ Running a few experiments showed that the model's test accuracy improves with an
 - Make attention fully "in-context"
     - Use activations to create bias terms
     - $b = W_x x$
+- Test if models work for input tensors of variable size.
 
 # References
 

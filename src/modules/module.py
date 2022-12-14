@@ -1,5 +1,7 @@
 """Modules of ImageTransformer.
 """
+import math
+
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -60,34 +62,56 @@ class ImageToSequence(nn.Module):
         return x
 
 
-class PositionEmbedding(nn.Module):
-    """Position embedding for images.
+class PositionalEmbedding(nn.Module):
+    """Positional embedding module.
+
+    Basically a trainable positional encoding.
 
     Attributes:
         sequence_length:
         embedding_dim:
 
     TODO
-        - Add is_trainable.
-        - Add other embedding types.
+        - Add params: is_trainable, zeros, ones, normal
     """
+
     def __init__(self, config: Config) -> None:
-        """Initializes PositionEmbedding."""
+        """Initializes PositionalEmbedding."""
         super().__init__()
 
         cfg = config.transformer.self_attention
         sequence_length = cfg.sequence_length
         embedding_dim = cfg.n_heads * cfg.head_dim
         self.embedding = nn.Parameter(
-            data=torch.normal(
-                mean=0.0,
-                std=0.02,
-                size=(sequence_length, embedding_dim),
-            )
+            data=torch.ones(size=(sequence_length, embedding_dim)), requires_grad=True
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return x + self.embedding
+
+
+class PositionalEncoding(nn.Module):
+    def __init__(self, config: Config) -> None:
+        """Initializes PositionalEncoding"""
+        super().__init__()
+        cfg = config.transformer.self_attention
+        sequence_length = cfg.sequence_length
+        embedding_dim = cfg.n_heads * cfg.head_dim
+
+        position = torch.arange(sequence_length).unsqueeze(1)
+        div_term = torch.exp(
+            torch.arange(0, embedding_dim, 2) * (-math.log(10000.0) / embedding_dim)
+        )
+        encoding = torch.zeros(sequence_length, embedding_dim)
+        encoding[:, 0::2] = torch.sin(position * div_term)
+        encoding[:, 1::2] = torch.cos(position * div_term)
+        # NOTE: use encoding = encoding.unsqueeze(0) for tensors of variable size.
+
+        self.encoding = nn.Parameter(data=encoding, requires_grad=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # NOTE: use return x + self.encoding[:x.size(0)] for tensors of variable size.
+        return x + self.encoding
 
 
 class MultiHeadSelfAttention(nn.Module):
@@ -122,21 +146,22 @@ class MultiHeadSelfAttention(nn.Module):
         # Trainable mask. Let the network decide how the mask should look like.
         if self.use_mask:
             # Additive trainable mask.
-            self.mask = nn.Parameter(
-                data=torch.zeros(size=(self.sequence_length, self.sequence_length)),
-                requires_grad=True
-            )
+            # self.mask = nn.Parameter(
+            #     data=torch.zeros(size=(self.sequence_length, self.sequence_length)),
+            #     requires_grad=True
+            # )
             # Multiplicative trainable mask.
-            self.mask = nn.Parameter(
-                data=torch.ones(size=(self.sequence_length, self.sequence_length)),
-                requires_grad=True
-            )
+            # self.mask = nn.Parameter(
+            #     data=torch.ones(size=(self.sequence_length, self.sequence_length)),
+            #     requires_grad=True
+            # )
             # Trainable causal mask, because why not.
             self.mask = nn.Parameter(
-                data=torch.tril(torch.ones(size=(self.sequence_length, self.sequence_length))),
-                requires_grad=False
+                data=torch.tril(
+                    torch.ones(size=(self.sequence_length, self.sequence_length))
+                ),
+                requires_grad=False,
             )
-
 
         self.linear = nn.Linear(
             in_features=self.embedding_dim, out_features=self.embedding_dim, bias=bias
@@ -155,11 +180,17 @@ class MultiHeadSelfAttention(nn.Module):
 
         # Split keys, queries, and values for processing in different heads.
         keys = keys.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
-        queries = queries.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
-        values = values.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
+        queries = queries.view(
+            batch_size, self.sequence_length, self.n_heads, self.head_dim
+        )
+        values = values.view(
+            batch_size, self.sequence_length, self.n_heads, self.head_dim
+        )
 
         # Scaled dot-product self-attention
-        out = torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / self.embedding_dim ** 0.5
+        out = (
+            torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / self.embedding_dim**0.5
+        )
 
         if self.use_mask:
             # out = self.mask + out
@@ -171,7 +202,9 @@ class MultiHeadSelfAttention(nn.Module):
 
         # Second part of scaled dot-product self-attention.
         out = torch.einsum("bhql,blhd->bqhd", [out, values])
-        out = out.reshape(batch_size, self.sequence_length, self.n_heads * self.head_dim)
+        out = out.reshape(
+            batch_size, self.sequence_length, self.n_heads * self.head_dim
+        )
 
         # Unify all heads in linear transformation.
         out = self.linear(out)

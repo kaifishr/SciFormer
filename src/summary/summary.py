@@ -4,12 +4,17 @@ summary.py
 Script holds methods for Tensorboard.
 """
 import math
+
 import torch
 from torch import nn
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 
-from src.modules.module import PositionEmbedding, MultiHeadSelfAttention, ImageToSequence
+from src.modules.module import (
+    PositionalEmbedding,
+    MultiHeadSelfAttention,
+    ImageToSequence,
+)
 from src.config.config import Config
 
 
@@ -58,10 +63,6 @@ def add_input_samples(
     x_max = x_max[..., None, None]
     x = (x - x_min) / (x_max - x_min)
     writer.add_images(tag=f"sample_batch_{tag}", img_tensor=x)
-
-
-def add_hyperparameters(config: dict):
-    """Add hyperparameters to Tensorboard."""
 
 
 def add_hist_params(
@@ -137,9 +138,10 @@ def add_hparams(
     writer.add_hparams(hparam_dict, metric_dict)
 
 
-def add_patch_embedding_weights(writer: SummaryWriter, model: nn.Module, global_step: int, n_samples_max: int = 64) -> None:
-    """Adds visualization of patch embedding weights to Tensorboard.
-    """
+def add_patch_embedding_weights(
+    writer: SummaryWriter, model: nn.Module, global_step: int, n_samples_max: int = 64
+) -> None:
+    """Adds visualization of patch embedding weights to Tensorboard."""
     for name, module in model.named_modules():
         if isinstance(module, ImageToSequence):
             weight = module.linear.weight.detach().cpu()
@@ -161,11 +163,12 @@ def add_patch_embedding_weights(writer: SummaryWriter, model: nn.Module, global_
             writer.add_images(name, weight_rescaled, global_step, dataformats="NCHW")
 
 
-def add_position_embedding_weights(writer: SummaryWriter, model: nn.Module, global_step: int) -> None:
-    """Adds position embedding visualization to Tensorboard.
-    """
+def add_position_embedding_weights(
+    writer: SummaryWriter, model: nn.Module, global_step: int
+) -> None:
+    """Adds position embedding visualization to Tensorboard."""
     for name, module in model.named_modules():
-        if isinstance(module, PositionEmbedding):
+        if isinstance(module, PositionalEmbedding):
             embedding = module.embedding.detach().cpu()
             x_min = torch.min(embedding)
             x_max = torch.max(embedding)
@@ -174,8 +177,7 @@ def add_position_embedding_weights(writer: SummaryWriter, model: nn.Module, glob
 
 
 def add_mask_weights(writer: SummaryWriter, model: nn.Module, global_step: int) -> None:
-    """Adds visualization of trainable mask used in self-attention modules to Tensorboard.
-    """
+    """Adds visualization of trainable mask used in self-attention modules to Tensorboard."""
     for name, module in model.named_modules():
         if isinstance(module, MultiHeadSelfAttention):
             if hasattr(module, "mask"):
