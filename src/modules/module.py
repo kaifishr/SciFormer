@@ -123,30 +123,6 @@ class PositionEmbedding(nn.Module):
         return x
 
 
-class PositionalEncoding(nn.Module):
-    def __init__(self, config: Config) -> None:
-        """Initializes PositionalEncoding"""
-        super().__init__()
-        cfg = config.transformer.self_attention
-        sequence_length = cfg.sequence_length
-        embedding_dim = cfg.n_heads * cfg.head_dim
-
-        position = torch.arange(sequence_length).unsqueeze(1)
-        div_term = torch.exp(
-            torch.arange(0, embedding_dim, 2) * (-math.log(10000.0) / embedding_dim)
-        )
-        encoding = torch.zeros(sequence_length, embedding_dim)
-        encoding[:, 0::2] = torch.sin(position * div_term)
-        encoding[:, 1::2] = torch.cos(position * div_term)
-        # NOTE: use encoding = encoding.unsqueeze(0) for tensors of variable size.
-
-        self.encoding = nn.Parameter(data=encoding, requires_grad=False)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # NOTE: use return x + self.encoding[:x.size(0)] for tensors of variable size.
-        return x + self.encoding
-
-
 class MultiHeadSelfAttention(nn.Module):
     """Implements multi-head self-attention for image data."""
 
