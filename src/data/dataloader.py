@@ -11,6 +11,8 @@ from torchvision.datasets.utils import download_url
 
 from ..config.config import Config
 
+from dataset import CharDataset
+
 
 def seed_worker(worker_id):
     """Seed dataloader workers."""

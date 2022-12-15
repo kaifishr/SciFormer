@@ -71,6 +71,7 @@ class PositionEmbedding(nn.Module):
         max_sequence_length:
         embedding_dim:
     """
+
     def __init__(self, config: Config) -> None:
         """Initializes PositionalEmbedding."""
         super().__init__()
@@ -92,9 +93,11 @@ class PositionEmbedding(nn.Module):
             elif self.pos_emb.encoding == "normal":
                 embedding = torch.normal(mean=0.0, std=0.01, size=size)
             elif self.pos_emb.encoding == "sinusoidal":
-                embedding = self._sinusoidal_encoding(size=size) 
+                embedding = self._sinusoidal_encoding(size=size)
             else:
-                raise NotImplementedError(f"Embedding {self.pos_emb.encoding} not implemented.")
+                raise NotImplementedError(
+                    f"Embedding {self.pos_emb.encoding} not implemented."
+                )
 
             self.embedding = nn.Parameter(data=embedding, requires_grad=requires_grad)
 
@@ -119,7 +122,7 @@ class PositionEmbedding(nn.Module):
             # pos = torch.arange(0, x.size(1), dtype=torch.long, device=x.device)#.unsqueeze(0)
             # print(f"{self.embedding[pos].shape = }")
             # print(f"{self.embedding[:x.size(1)].shape = }")
-            x = x + self.embedding[:x.size(1)]
+            x = x + self.embedding[: x.size(1)]
         return x
 
 
@@ -146,14 +149,10 @@ class Mask(nn.Module):
             # Create masks.
             if mask_type == "trainable_additive":
                 self.mask = nn.Parameter(
-                    data=torch.zeros(size=size),
-                    requires_grad=True
+                    data=torch.zeros(size=size), requires_grad=True
                 )
             elif mask_type == "trainable_multiplicative":
-                self.mask = nn.Parameter(
-                    data=torch.ones(size=size),
-                    requires_grad=True
-                )
+                self.mask = nn.Parameter(data=torch.ones(size=size), requires_grad=True)
             elif mask_type == "causal":
                 self.mask = nn.Parameter(
                     data=torch.tril(input=torch.ones(size=size)),
@@ -173,16 +172,18 @@ class Mask(nn.Module):
         elif mask_type == "trainable_multiplicative":
             self.mask_function = lambda x, seq_len: self.mask[:seq_len, :seq_len] * x
         elif mask_type == "causal":
-            self.mask_function = lambda x, seq_len: x.masked_fill(self.mask[:seq_len, :seq_len] == 0, float("-inf"))
+            self.mask_function = lambda x, seq_len: x.masked_fill(
+                self.mask[:seq_len, :seq_len] == 0, float("-inf")
+            )
         else:
             raise NotImplementedError(f"Mask {mask_type} not implemented.")
 
     def _apply_mask(self, x: torch.Tensor) -> torch.Tensor:
         """Applies installed mask to input tensor.
-        
+
         Args:
             x: Input tensor.
-            
+
         Returns: Masked tensor.
         """
         sequence_length = x.size(-1)
@@ -192,11 +193,8 @@ class Mask(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self.cfg_mask.is_activated:
             x = self._apply_mask(x)
-            # sequence_length = x.size(-1)
-            # x = self.mask[:sequence_length, :sequence_length] + x
-            # x = self.mask[:sequence_length, :sequence_length] * x
-            # x = x.masked_fill(self.mask[:sequence_length, :sequence_length] == 0, float("-inf"))
         return x
+
 
 class MultiHeadSelfAttention(nn.Module):
     """Implements multi-head self-attention for image data."""
