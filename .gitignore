@@ -181,7 +181,8 @@ tags
 ########
 
 **/data/**
-!src/data/**
+!src/data/dataloader.py
+!src/data/dataset.py
 
 ###################
 # Network weights #
