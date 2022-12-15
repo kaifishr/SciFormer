@@ -43,9 +43,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
                 transforms.Resize(size=160),
                 transforms.RandomCrop(size=128),
                 transforms.RandomHorizontalFlip(),
-                transforms.RandomVerticalFlip(),
                 transforms.ColorJitter(brightness=0.5, hue=0.3),
-                transforms.RandomRotation(degrees=(0, 45)),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std, inplace=True),
             ]
@@ -87,9 +85,6 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
             [
                 transforms.RandomCrop(32, padding=4),
                 transforms.RandomHorizontalFlip(),
-                transforms.RandomVerticalFlip(),
-                transforms.ColorJitter(brightness=0.5, hue=0.3),
-                transforms.RandomRotation(degrees=(0, 10)),     ###
                 transforms.ToTensor(),
                 transforms.RandomErasing(),
                 transforms.Normalize(mean, std),
@@ -122,10 +117,9 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
 
         transform_train = transforms.Compose(
             [
-                transforms.RandomCrop(28, padding=4),
-                transforms.RandomRotation(degrees=(0, 20)),     ###
+                transforms.RandomCrop(28, padding=2),
                 transforms.ToTensor(),
-                # transforms.RandomErasing(),
+                transforms.RandomErasing(),
                 transforms.Normalize(mean, std),
             ]
         )
@@ -156,11 +150,10 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
 
         transform_train = transforms.Compose(
             [
-                transforms.RandomCrop(28, padding=4),
+                transforms.RandomCrop(28, padding=2),
                 transforms.RandomHorizontalFlip(),
-                transforms.RandomRotation(degrees=(0, 20)),     ###
                 transforms.ToTensor(),
-                # transforms.RandomErasing(),
+                transforms.RandomErasing(),
                 transforms.Normalize(mean, std),
             ]
         )

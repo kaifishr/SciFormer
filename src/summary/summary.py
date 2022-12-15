@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 
 from src.modules.module import (
-    PositionalEmbedding,
+    PositionEmbedding,
     MultiHeadSelfAttention,
     ImageToSequence,
 )
@@ -168,7 +168,7 @@ def add_position_embedding_weights(
 ) -> None:
     """Adds position embedding visualization to Tensorboard."""
     for name, module in model.named_modules():
-        if isinstance(module, PositionalEmbedding):
+        if isinstance(module, PositionEmbedding):
             embedding = module.embedding.detach().cpu()
             x_min = torch.min(embedding)
             x_max = torch.max(embedding)

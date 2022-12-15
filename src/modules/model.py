@@ -6,7 +6,7 @@ import torch.nn as nn
 
 from .module import (
     ImageToSequence,
-    PositionalEmbedding,
+    PositionEmbedding,
     TransformerBlock,
     Classifier,
 )
@@ -20,7 +20,7 @@ class ImageTransformer(nn.Module):
         super().__init__()
 
         self.image_to_sequence = ImageToSequence(config)
-        self.position_embedding = PositionalEmbedding(config)
+        self.position_embedding = PositionEmbedding(config)
 
         n_blocks = config.transformer.n_blocks
         blocks = [TransformerBlock(config) for _ in range(n_blocks)]

@@ -62,32 +62,65 @@ class ImageToSequence(nn.Module):
         return x
 
 
-class PositionalEmbedding(nn.Module):
+class PositionEmbedding(nn.Module):
     """Positional embedding module.
 
-    Basically a trainable positional encoding.
+    Positional embedding with different encoding schemes.
 
     Attributes:
-        sequence_length:
+        max_sequence_length:
         embedding_dim:
-
-    TODO
-        - Add params: is_trainable, zeros, ones, normal
     """
-
     def __init__(self, config: Config) -> None:
         """Initializes PositionalEmbedding."""
         super().__init__()
+        max_sequence_length = config.transformer.max_sequence_length
+        n_heads = config.transformer.self_attention.n_heads
+        head_dim = config.transformer.self_attention.head_dim
+        embedding_dim = n_heads * head_dim
 
-        cfg = config.transformer.self_attention
-        sequence_length = cfg.sequence_length
-        embedding_dim = cfg.n_heads * cfg.head_dim
-        self.embedding = nn.Parameter(
-            data=torch.ones(size=(sequence_length, embedding_dim)), requires_grad=True
+        self.pos_emb = config.transformer.position_embedding
+
+        if self.pos_emb.is_activated:
+            requires_grad = True if self.pos_emb.is_trainable else False
+            size = (max_sequence_length, embedding_dim)
+
+            if self.pos_emb.encoding == "zeros":
+                embedding = torch.zeros(size=size)
+            elif self.pos_emb.encoding == "ones":
+                embedding = torch.ones(size=size)
+            elif self.pos_emb.encoding == "normal":
+                embedding = torch.normal(mean=0.0, std=0.01, size=size)
+            elif self.pos_emb.encoding == "sinusoidal":
+                embedding = self._sinusoidal_encoding(size=size) 
+            else:
+                raise NotImplementedError(f"Embedding {self.pos_emb.encoding} not implemented.")
+
+            self.embedding = nn.Parameter(data=embedding, requires_grad=requires_grad)
+
+    @staticmethod
+    def _sinusoidal_encoding(size: tuple) -> torch.Tensor:
+        """Sinusoidal encoding scheme.
+
+        See also: https://arxiv.org/abs/1706.03762
+        """
+        max_sequence_length, embedding_dim = size
+        position = torch.arange(max_sequence_length).unsqueeze(1)
+        div_term = torch.exp(
+            torch.arange(0, embedding_dim, 2) * (-math.log(10000.0) / embedding_dim)
         )
+        encoding = torch.zeros(max_sequence_length, embedding_dim)
+        encoding[:, 0::2] = torch.sin(position * div_term)
+        encoding[:, 1::2] = torch.cos(position * div_term)
+        return encoding
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return x + self.embedding
+        if self.pos_emb.is_activated:
+            # pos = torch.arange(0, x.size(1), dtype=torch.long, device=x.device)#.unsqueeze(0)
+            # print(f"{self.embedding[pos].shape = }")
+            # print(f"{self.embedding[:x.size(1)].shape = }")
+            x = x + self.embedding[:x.size(1)]
+        return x
 
 
 class PositionalEncoding(nn.Module):

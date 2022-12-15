@@ -24,15 +24,21 @@ data:
 #########
 transformer:
   n_blocks: 16
+  max_sequence_length: 200
   image_to_sequence:
     patch_size: 1
+  position_embedding:
+    is_activated: true
+    is_trainable: true
+    # Available encoding schemes: ones, zeros, normal, sinusoidal
+    encoding: "normal" 
   transformer_block:
     hidden_expansion: 2
     dropout_prob: 0
   self_attention:
     sequence_length: 32
-    n_heads: 4
-    head_dim: 8  # embedding dimension is n_heads * head_dim
+    n_heads: 2
+    head_dim: 4  # embedding dimension is n_heads * head_dim
     dropout_prob: 0
     use_bias: False
     use_mask: True
