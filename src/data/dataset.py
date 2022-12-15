@@ -40,9 +40,16 @@ class CharDataset(Dataset):
     def __getitem__(self, idx):
         """Extracts sequence of characters from data.
 
-        data = [a, b, c, d, e, f, g, h, i, j, k]  
-        x = [b, c, d, e, f]  
-        y = [c, d, e, f, g]  
+        For a sequence of characters
+
+        data = [The quick brown Fox jumps]
+                0123456789...
+
+        idx=1 and sequence_length=5, the following
+        sequences are produced:
+
+        x = [he qu]  
+        y = [e qui]  
         """
 
         data = ["a", "b"]
