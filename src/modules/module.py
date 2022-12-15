@@ -123,6 +123,81 @@ class PositionEmbedding(nn.Module):
         return x
 
 
+class Mask(nn.Module):
+    """Implements a Mask module.
+
+    Comes with different types of mask applied to the attention matrix
+    of dot-products. The masks weight can be trained if required.
+    """
+
+    def __init__(self, config: Config):
+        """Initializes the Mask module."""
+        super().__init__()
+
+        self.cfg_mask = config.transformer.mask
+
+        if self.cfg_mask.is_activated:
+            self.max_sequence_length = config.transformer.max_sequence_length
+            size = (self.max_sequence_length, self.max_sequence_length)
+
+            # self.mask = self._install_mask(config)
+            mask_type = self.cfg_mask.type
+
+            # Create masks.
+            if mask_type == "trainable_additive":
+                self.mask = nn.Parameter(
+                    data=torch.zeros(size=size),
+                    requires_grad=True
+                )
+            elif mask_type == "trainable_multiplicative":
+                self.mask = nn.Parameter(
+                    data=torch.ones(size=size),
+                    requires_grad=True
+                )
+            elif mask_type == "causal":
+                self.mask = nn.Parameter(
+                    data=torch.tril(input=torch.ones(size=size)),
+                    requires_grad=False,
+                )
+            else:
+                raise NotImplementedError(f"Mask {mask_type} not implemented.")
+            # TODO: self.mask -> self.weight?
+
+            self.mask_function = None
+            self._install_mask(mask_type)
+
+    def _install_mask(self, mask_type: str) -> None:
+        # Create masks.
+        if mask_type == "trainable_additive":
+            self.mask_function = lambda x, seq_len: self.mask[:seq_len, :seq_len] + x
+        elif mask_type == "trainable_multiplicative":
+            self.mask_function = lambda x, seq_len: self.mask[:seq_len, :seq_len] * x
+        elif mask_type == "causal":
+            self.mask_function = lambda x, seq_len: x.masked_fill(self.mask[:seq_len, :seq_len] == 0, float("-inf"))
+        else:
+            raise NotImplementedError(f"Mask {mask_type} not implemented.")
+
+    def _apply_mask(self, x: torch.Tensor) -> torch.Tensor:
+        """Applies installed mask to input tensor.
+        
+        Args:
+            x: Input tensor.
+            
+        Returns: Masked tensor.
+        """
+        sequence_length = x.size(-1)
+        x = self.mask_function(x, sequence_length)
+        return x
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if self.cfg_mask.is_activated:
+            x = self._apply_mask(x)
+            # sequence_length = x.size(-1)
+            # x = self.mask[:sequence_length, :sequence_length] + x
+            # x = self.mask[:sequence_length, :sequence_length] * x
+            # x = x.masked_fill(self.mask[:sequence_length, :sequence_length] == 0, float("-inf"))
+        return x
+
 class MultiHeadSelfAttention(nn.Module):
     """Implements multi-head self-attention for image data."""
 
@@ -138,7 +213,7 @@ class MultiHeadSelfAttention(nn.Module):
         self.embedding_dim = cfg.n_heads * cfg.head_dim
         self.dropout_prob = cfg.dropout_prob
         self.use_bias = cfg.use_bias
-        self.use_mask = cfg.use_mask
+        # self.use_mask = cfg.use_mask
 
         bias = True if self.use_bias else False
 
@@ -153,24 +228,25 @@ class MultiHeadSelfAttention(nn.Module):
         )
 
         # Trainable mask. Let the network decide how the mask should look like.
-        if self.use_mask:
-            # Additive trainable mask.
-            # self.mask = nn.Parameter(
-            #     data=torch.zeros(size=(self.sequence_length, self.sequence_length)),
-            #     requires_grad=True
-            # )
-            # Multiplicative trainable mask.
-            # self.mask = nn.Parameter(
-            #     data=torch.ones(size=(self.sequence_length, self.sequence_length)),
-            #     requires_grad=True
-            # )
-            # Trainable causal mask, because why not.
-            self.mask = nn.Parameter(
-                data=torch.tril(
-                    torch.ones(size=(self.sequence_length, self.sequence_length))
-                ),
-                requires_grad=False,
-            )
+        self.mask = Mask(config=config)
+        # if self.use_mask:
+        #     # Additive trainable mask.
+        #     # self.mask = nn.Parameter(
+        #     #     data=torch.zeros(size=(self.sequence_length, self.sequence_length)),
+        #     #     requires_grad=True
+        #     # )
+        #     # Multiplicative trainable mask.
+        #     # self.mask = nn.Parameter(
+        #     #     data=torch.ones(size=(self.sequence_length, self.sequence_length)),
+        #     #     requires_grad=True
+        #     # )
+        #     # Trainable causal mask, because why not.
+        #     self.mask = nn.Parameter(
+        #         data=torch.tril(
+        #             torch.ones(size=(self.sequence_length, self.sequence_length))
+        #         ),
+        #         requires_grad=False,
+        #     )
 
         self.linear = nn.Linear(
             in_features=self.embedding_dim, out_features=self.embedding_dim, bias=bias
@@ -201,10 +277,11 @@ class MultiHeadSelfAttention(nn.Module):
             torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / self.embedding_dim**0.5
         )
 
-        if self.use_mask:
-            # out = self.mask + out
-            # out = self.mask * out
-            out.masked_fill_(self.mask == 0, float("-inf"))
+        out = self.mask(out)
+        # if self.use_mask:
+        #     # out = self.mask + out
+        #     # out = self.mask * out
+        #     out.masked_fill_(self.mask == 0, float("-inf"))
 
         out = F.softmax(out, dim=-1)
         out = self.dropout(out)

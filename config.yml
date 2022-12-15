@@ -23,29 +23,29 @@ data:
 # Model #
 #########
 transformer:
-  n_blocks: 16
+  n_blocks: 4
   max_sequence_length: 200
   image_to_sequence:
     patch_size: 1
   position_embedding:
     is_activated: true
     is_trainable: true
-    # Available encoding schemes: ones, zeros, normal, sinusoidal
+    # Available encoding schemes: ones, zeros, random_normal, sinusoidal
     encoding: "normal" 
   transformer_block:
     hidden_expansion: 2
     dropout_prob: 0
   self_attention:
-    sequence_length: 32
+    sequence_length: 64
     n_heads: 2
     head_dim: 4  # embedding dimension is n_heads * head_dim
     dropout_prob: 0
     use_bias: False
-    use_mask: True
-  # mask:
-  #   use_mask: True
-  #   type: causal, trainable_additive, trainable_multiplicative
-  #   is_trainable: True
+  mask:
+    is_activated: true
+    is_trainable: true
+    # Available masks: causal, trainable_additive, trainable_multiplicative 
+    type: trainable_multiplicative 
   classifier:
     param1: None
 
@@ -55,7 +55,7 @@ transformer:
 trainer:
   device: "gpu"   # gpu, cpu
   n_epochs: 500
-  batch_size: 256
+  batch_size: 512
   weight_decay: 0
   learning_rate: 2.0e-4
   # learning_rate_step_every: 200

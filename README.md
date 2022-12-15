@@ -150,12 +150,9 @@ Running a few experiments showed that the model's test accuracy improves with an
 
 # TODO:
 
-- Add mask to self-attention
-- Add option to have trainable embedding / mask
 - Make attention fully "in-context"
     - Use activations to create bias terms
     - $b = W_x x$
-- Test if models work for input tensors of variable size.
 
 # References
 

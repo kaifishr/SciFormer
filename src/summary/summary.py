@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 
 from src.modules.module import (
     PositionEmbedding,
-    MultiHeadSelfAttention,
+    Mask,
     ImageToSequence,
 )
 from src.config.config import Config
@@ -179,7 +179,7 @@ def add_position_embedding_weights(
 def add_mask_weights(writer: SummaryWriter, model: nn.Module, global_step: int) -> None:
     """Adds visualization of trainable mask used in self-attention modules to Tensorboard."""
     for name, module in model.named_modules():
-        if isinstance(module, MultiHeadSelfAttention):
+        if isinstance(module, Mask):
             if hasattr(module, "mask"):
                 mask = module.mask.detach().cpu()
                 x_min = torch.min(mask)
