@@ -99,15 +99,8 @@ class CharacterTransformer(nn.Module):
         print(f"Number of parameters: {sum(n_params)/1e6:.3f} M")
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        print(f"{x = }")
-        print(x.shape)
         x = self.token_embedding(x)
-        print(f"{x = }")
-        print(x.shape)
         x = self.position_embedding(x)
-        print(f"{x = }")
-        print(x.shape)
-        exit()
         x = self.transformer_blocks(x)
         x = self.classifier(x)
         return x

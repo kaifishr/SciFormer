@@ -279,56 +279,37 @@ class MultiHeadSelfAttention(nn.Module):
 
         cfg = config.transformer.self_attention
 
-        self.sequence_length = cfg.sequence_length
         self.n_heads = cfg.n_heads
         self.head_dim = cfg.head_dim
-        self.embedding_dim = cfg.n_heads * cfg.head_dim
         self.dropout_prob = cfg.dropout_prob
         self.use_bias = cfg.use_bias
         # self.use_mask = cfg.use_mask
 
+        embedding_dim = cfg.n_heads * cfg.head_dim
         bias = True if self.use_bias else False
 
         self.comp_keys = nn.Linear(
-            in_features=self.embedding_dim, out_features=self.embedding_dim, bias=bias
+            in_features=embedding_dim, out_features=embedding_dim, bias=bias
         )
         self.comp_queries = nn.Linear(
-            in_features=self.embedding_dim, out_features=self.embedding_dim, bias=bias
+            in_features=embedding_dim, out_features=embedding_dim, bias=bias
         )
         self.comp_values = nn.Linear(
-            in_features=self.embedding_dim, out_features=self.embedding_dim, bias=bias
+            in_features=embedding_dim, out_features=embedding_dim, bias=bias
         )
 
         # Trainable mask. Let the network decide how the mask should look like.
         self.mask = Mask(config=config)
-        # if self.use_mask:
-        #     # Additive trainable mask.
-        #     # self.mask = nn.Parameter(
-        #     #     data=torch.zeros(size=(self.sequence_length, self.sequence_length)),
-        #     #     requires_grad=True
-        #     # )
-        #     # Multiplicative trainable mask.
-        #     # self.mask = nn.Parameter(
-        #     #     data=torch.ones(size=(self.sequence_length, self.sequence_length)),
-        #     #     requires_grad=True
-        #     # )
-        #     # Trainable causal mask, because why not.
-        #     self.mask = nn.Parameter(
-        #         data=torch.tril(
-        #             torch.ones(size=(self.sequence_length, self.sequence_length))
-        #         ),
-        #         requires_grad=False,
-        #     )
 
         self.linear = nn.Linear(
-            in_features=self.embedding_dim, out_features=self.embedding_dim, bias=bias
+            in_features=embedding_dim, out_features=embedding_dim, bias=bias
         )
 
         self.dropout = nn.Dropout(p=self.dropout_prob)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Forward method."""
-        batch_size = x.shape[0]
+        batch_size, sequence_length, embedding_dim = x.size()
 
         # Compute keys, queries, and values over all embedding vectors.
         keys = self.comp_keys(x)
@@ -336,17 +317,17 @@ class MultiHeadSelfAttention(nn.Module):
         values = self.comp_values(x)
 
         # Split keys, queries, and values for processing in different heads.
-        keys = keys.view(batch_size, self.sequence_length, self.n_heads, self.head_dim)
+        keys = keys.view(batch_size, sequence_length, self.n_heads, self.head_dim)
         queries = queries.view(
-            batch_size, self.sequence_length, self.n_heads, self.head_dim
+            batch_size, sequence_length, self.n_heads, self.head_dim
         )
         values = values.view(
-            batch_size, self.sequence_length, self.n_heads, self.head_dim
+            batch_size, sequence_length, self.n_heads, self.head_dim
         )
 
         # Scaled dot-product self-attention
         out = (
-            torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / self.embedding_dim**0.5
+            torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / embedding_dim**0.5
         )
 
         out = self.mask(out)
@@ -361,7 +342,7 @@ class MultiHeadSelfAttention(nn.Module):
         # Second part of scaled dot-product self-attention.
         out = torch.einsum("bhql,blhd->bqhd", [out, values])
         out = out.reshape(
-            batch_size, self.sequence_length, self.n_heads * self.head_dim
+            batch_size, sequence_length, self.n_heads * self.head_dim
         )
 
         # Unify all heads in linear transformation.
@@ -411,7 +392,7 @@ class Classifier(nn.Module):
         """Initializes the classifier."""
         super().__init__()
         cfg_attention = config.transformer.self_attention
-        sequence_length = cfg_attention.sequence_length
+        sequence_length = cfg_attention.sequence_length  # TODO: For image transformer use here "config.transformer.img_to_sequence.sequence_length"
         embedding_dim = cfg_attention.n_heads * cfg_attention.head_dim
         n_dims_out = config.data.n_classes
 

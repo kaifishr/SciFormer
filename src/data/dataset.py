@@ -35,8 +35,8 @@ class CharDataset(Dataset):
 
         self.num_tokens = len(chars)
 
-        print(f"Total number of characters: {len(data)}")
-        print(f"Unique characteres: {self.num_tokens}")
+        print(f"Number of characters: {len(data)/1e6:.3f} M\n")
+        print(f"Unique characteres: {self.num_tokens}\n")
 
     def __len__(self):
         return len(self.data) - self.max_sequence_length

@@ -102,14 +102,17 @@ def run_training(model, dataloader, writer, config: Config) -> None:
 
             # Get the inputs; data is a list of [inputs, labels]
             inputs, labels = x_data.to(device), y_data.to(device)
-            print(f"{inputs = }")
-            print(f"{labels = }")
 
             # Zero the parameter gradients
             optimizer.zero_grad()
 
             # Feedforward
             outputs = model(inputs)
+
+            # Reshape outputs and labels as if we have a classification task.
+            # TODO: Move reshaping to model.
+            outputs = outputs.view(-1, outputs.size(-1))
+            labels = labels.view(-1)
             loss = criterion(outputs, labels)
 
             # Backpropagation
