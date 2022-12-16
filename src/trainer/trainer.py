@@ -15,6 +15,7 @@ from ..summary.summary import (
     add_hist_params,
     add_hparams,
     add_patch_embedding_weights,
+    add_token_embedding_weights,
     add_position_embedding_weights,
     add_mask_weights,
 )
@@ -195,6 +196,14 @@ def run_training(model, dataloader, writer, config: Config) -> None:
                 epoch % config.summary.add_patch_embedding_weights.every_n_epochs == 0
             ) or (epoch + 1 == n_epochs):
                 add_patch_embedding_weights(
+                    model=model, writer=writer, global_step=epoch
+                )
+
+        if config.summary.add_token_embedding_weights.every_n_epochs > 0:
+            if (
+                epoch % config.summary.add_token_embedding_weights.every_n_epochs == 0
+            ) or (epoch + 1 == n_epochs):
+                add_token_embedding_weights(
                     model=model, writer=writer, global_step=epoch
                 )
 

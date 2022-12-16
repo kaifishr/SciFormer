@@ -11,6 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 
 from src.modules.module import (
+    TokenEmbedding,
     PositionEmbedding,
     Mask,
     ImageToSequence,
@@ -163,12 +164,21 @@ def add_patch_embedding_weights(
             writer.add_images(name, weight_rescaled, global_step, dataformats="NCHW")
 
 
-def add_position_embedding_weights(
-    writer: SummaryWriter, model: nn.Module, global_step: int
-) -> None:
-    """Adds position embedding visualization to Tensorboard."""
+def add_position_embedding_weights(writer: SummaryWriter, model: nn.Module, global_step: int) -> None:
+    """Adds visualization of position embeddings Tensorboard."""
     for name, module in model.named_modules():
         if isinstance(module, PositionEmbedding):
+            embedding = module.embedding.detach().cpu()
+            x_min = torch.min(embedding)
+            x_max = torch.max(embedding)
+            embedding_rescaled = (embedding - x_min) / (x_max - x_min)
+            writer.add_image(name, embedding_rescaled, global_step, dataformats="HW")
+
+
+def add_token_embedding_weights(writer: SummaryWriter, model: nn.Module, global_step: int) -> None:
+    """Adds visualization of token embeddings to Tensorboard."""
+    for name, module in model.named_modules():
+        if isinstance(module, TokenEmbedding):
             embedding = module.embedding.detach().cpu()
             x_min = torch.min(embedding)
             x_max = torch.max(embedding)

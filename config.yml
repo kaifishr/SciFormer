@@ -36,7 +36,7 @@ transformer:
     is_activated: true
     is_trainable: true
     # Available encoding schemes: ones, zeros, random_normal, sinusoidal
-    encoding: "ones" 
+    encoding: "sinusoidal" 
   transformer_block:
     hidden_expansion: 2
     dropout_prob: 0
@@ -79,9 +79,11 @@ summary:
   add_graph: false
   add_sample_batch: false
   add_hparams: false
-  add_patch_embedding_weights:
+  add_patch_embeddings:
     every_n_epochs: 10
-  add_position_embedding_weights:
+  add_position_embeddings:
+    every_n_epochs: 10
+  add_token_embeddings:
     every_n_epochs: 10
   add_mask_weights:
     every_n_epochs: 10
@@ -92,7 +94,7 @@ summary:
   save_test_stats:
     every_n_epochs: -1
   save_model:
-    every_n_epochs: 50
+    every_n_epochs: 1
 
 checkpoints:
   load_model: 0
