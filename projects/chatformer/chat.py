@@ -80,6 +80,9 @@ class Chat:
             time.sleep(0.1)
 
             input_text = input()
+
+            if input_text == "exit":
+                is_running = False
             # input_text = "What is your purpose?"
 
             # TODO: Check if input text is not too long (max sequence length).
@@ -90,8 +93,6 @@ class Chat:
 
             print(f"\n{output_text}\n")
 
-            if input_text == "exit":
-                is_running = False
 
         print("Bye!")
 
