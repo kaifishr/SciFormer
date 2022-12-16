@@ -31,19 +31,18 @@ transformer:
   token_embedding:
     is_trainable: true
     # Available encoding schemes: random_normal, sinusoidal
-    encoding: "random_normal" 
+    encoding: "sinusoidal" 
   position_embedding:
     is_activated: true
     is_trainable: true
     # Available encoding schemes: ones, zeros, random_normal, sinusoidal
-    encoding: "sinusoidal" 
+    encoding: "zeros" 
   transformer_block:
     hidden_expansion: 2
     dropout_prob: 0
   self_attention:
-    # sequence_length: 64  # TODO: Remove
-    n_heads: 8
-    head_dim: 16  # embedding dimension is n_heads * head_dim
+    n_heads: 4
+    head_dim: 8  # embedding dimension is n_heads * head_dim
     dropout_prob: 0
     use_bias: False
   mask:
@@ -103,7 +102,7 @@ checkpoints:
 ###############
 # Directories #
 ###############
-dirs:
+dirs:  # TODO: dirs -> dir
   data: "data"
   runs: "runs"
   weights: "weights"
