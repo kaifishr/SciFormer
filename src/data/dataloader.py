@@ -182,7 +182,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
     elif dataset == "shakespeare":
         # dataset_url = "http://mattmahoney.net/dc/enwik8.zip"
         dataset_url = "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
-
+        # See: https://pytorch.org/text/stable/utils.html
         cwd = os.getcwd()
 
         data_dir = cwd + "/data/shakespeare"
