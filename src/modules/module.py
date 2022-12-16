@@ -10,7 +10,9 @@ from ..config.config import Config
 
 
 class ImageToSequence(nn.Module):
-    """Transforms image into sequence for self-attention module.
+    """Transforms image into sequence.
+
+    Performs an embedding of images into a sequence.
 
     Attributes:
         sequence_length:
@@ -59,6 +61,67 @@ class ImageToSequence(nn.Module):
         x = torch.flatten(input=x, start_dim=2, end_dim=-1)
         x = self.linear(x)
         x = x.view(-1, self.sequence_length, self.embedding_dim)
+        return x
+
+
+class TokenEmbedding(nn.Module):
+    """Token embedding module.
+
+    Embeds an integer as a vector of defined dimension.
+
+    Attributes:
+        max_sequence_length:
+        embedding_dim:
+    """
+
+    def __init__(self, config: Config) -> None:
+        """Initializes PositionalEmbedding."""
+        super().__init__()
+
+        num_characters = config.data.num_characters
+
+        n_heads = config.transformer.self_attention.n_heads
+        head_dim = config.transformer.self_attention.head_dim
+        embedding_dim = n_heads * head_dim
+
+        self.cfg_token_embedding = config.transformer.token_embedding
+
+        requires_grad = True if self.pos_emb.is_trainable else False
+        size = (num_characters, embedding_dim)
+
+        if self.cfg_token_embedding.encoding == "normal":
+            embedding = torch.normal(mean=0.0, std=0.01, size=size)
+        elif self.cfg_token_embedding.encoding == "sinusoidal":
+            embedding = self._sinusoidal_encoding(size=size)
+        else:
+            raise NotImplementedError(
+                f"Embedding {self.cfg_token_embedding.encoding} not implemented."
+            )
+
+        self.embedding = nn.Parameter(data=embedding, requires_grad=requires_grad)
+
+    @staticmethod
+    def _sinusoidal_encoding(size: tuple) -> torch.Tensor:
+        """Sinusoidal encoding scheme.
+
+        See also: https://arxiv.org/abs/1706.03762
+        """
+        num_characters, embedding_dim = size
+        position = torch.arange(num_characters).unsqueeze(1)
+        div_term = torch.exp(
+            torch.arange(0, embedding_dim, 2) * (-math.log(10000.0) / embedding_dim)
+        )
+        encoding = torch.zeros(num_characters, embedding_dim)
+        encoding[:, 0::2] = torch.sin(position * div_term)
+        encoding[:, 1::2] = torch.cos(position * div_term)
+        return encoding
+
+    def forward(self, x: torch.Tensor[torch.long]) -> torch.Tensor:
+        """Receives sequences of indices and returns respective embedding."""
+        # pos = torch.arange(0, x.size(1), dtype=torch.long, device=x.device)#.unsqueeze(0)
+        # print(f"{self.embedding[pos].shape = }")
+        # print(f"{self.embedding[:x.size(1)].shape = }")
+        x = self.embedding[: x.size(1)]
         return x
 
 

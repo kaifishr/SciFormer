@@ -9,7 +9,7 @@ from src.config.config import Config
 class CharDataset(Dataset):
     """Character-level dataset.
     
-    Generates batches of character sequences.
+    Generates encoded batches of character sequences.
 
     Attributes:
         data:
@@ -19,10 +19,12 @@ class CharDataset(Dataset):
         num_chars:
     """
 
-    def __init__(self, data, config: Config):
+    def __init__(self, data: str, config: Config):
 
         self.data = data
         self.config = config
+
+        self.max_sequence_length = config.transformer.max_sequence_length
 
         # TODO: Do this only once in a prepocessing step.
         chars = sorted(list(set(data)))
@@ -31,29 +33,43 @@ class CharDataset(Dataset):
         self.char_to_index = {char: i for i, char in enumerate(chars)}
         self.index_to_char = {i: char for i, char in enumerate(chars)}
 
-        print(f"Total size of dataset: {len(data)} characters.")
-        print(f"Unique characteres: {len(chars)}")
+        self.num_characters = len(chars)
+
+        print(f"Total number of characters: {len(data)}")
+        print(f"Unique characteres: {self.num_characters}")
 
     def __len__(self):
-        return len(self.data)
+        return len(self.data) - self.max_sequence_length
 
     def __getitem__(self, idx):
         """Extracts sequence of characters from data.
 
-        For a sequence of characters
+        For data holding a sequence of characters
 
-        data = [The quick brown Fox jumps]
-                0123456789...
+        data = "The quick brown Fox jumps"
 
-        idx=1 and sequence_length=5, the following
-        sequences are produced:
+        idx=4 and block_size=8, the following block
+        of characters are extracted from the data
+        sequence
 
-        x = [he qu]  
-        y = [e qui]  
+        char_block = "quick bro"
+
+        which is being encoded as a list of integers:
+
+        encoded_block = [9, 1, 4, 8, 2, 5, 3, 7, 6]
+                         q  u  i  c  k " " b  r  o 
+
+        From this list, the following input and target
+        is created:
+
+        x = [9, 1, 4, 8, 2, 5, 3, 7]
+        y = [1, 4, 8, 2, 5, 3, 7, 6]
+
+        Args:
+            idx: Index to access string stored in data.
         """
-
-        data = ["a", "b"]
-        x = torch.tensor(data=data, dtype=torch.long)
-        y = torch.tensor(data=data, dtype=torch.long)
-
+        char_sequence = self.data[idx:idx + self.max_sequence_length + 1]
+        int_sequence = [self.char_to_index[char] for char in char_sequence]
+        x = torch.tensor(data=int_sequence[:-1], dtype=torch.long)
+        y = torch.tensor(data=int_sequence[1:], dtype=torch.long)
         return x, y

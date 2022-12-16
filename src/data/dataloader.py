@@ -9,6 +9,8 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision.datasets.utils import download_url
 
+import  torchtext
+
 from ..config.config import Config
 
 from dataset import CharDataset
@@ -177,6 +179,27 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         # Add number of classes and input shape to config
         config.data.n_classes = 10
         config.data.input_shape = (1, 28, 28)
+
+    elif dataset == "shakespeare":
+        # dataset_url = "http://mattmahoney.net/dc/enwik8.zip"
+        dataset_url = "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
+
+        data_dir = cwd + "./data/shakespeare"
+        torchtext.utils.download_from_url(url=dataset_url, root=data_dir)
+
+        cwd = os.getcwd()
+        # with tarfile.open(cwd + "/data/imagewoof-160.tgz", "r:gz") as tar:
+        #     tar.extractall(path=cwd + "/data")
+
+        data_path = cwd + "/input.txt"
+        with open(data_path, mode="r") as file:
+            data = file.read()
+
+        train_dataset = CharDataset(data=data, config=config)
+        test_dataset = CharDataset(data="", config=config)
+
+        config.data.n_classes = train_dataset.num_characters
+        config.data.num_characters = train_dataset.num_characters
 
     else:
         raise NotImplementedError(f"Dataloader for {dataset} not implemented.")

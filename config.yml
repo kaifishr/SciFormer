@@ -7,9 +7,9 @@ random_seed: 0
 ##############
 # Dataloader #
 ##############
-# mnist, fmnist, cifar10, imagewoof
+# mnist, fmnist, cifar10, imagewoof, shakespeare
 dataloader:
-  dataset: "cifar10"
+  dataset: "shakespeare"
   num_workers: 0
 
 ########
@@ -27,25 +27,29 @@ transformer:
   max_sequence_length: 200
   image_to_sequence:
     patch_size: 1
+  token_embedding:
+    is_trainable: true
+    # Available encoding schemes: random_normal, sinusoidal
+    encoding: "random_normal" 
   position_embedding:
     is_activated: true
     is_trainable: true
     # Available encoding schemes: ones, zeros, random_normal, sinusoidal
-    encoding: "normal" 
+    encoding: "ones" 
   transformer_block:
     hidden_expansion: 2
     dropout_prob: 0
   self_attention:
     sequence_length: 64
-    n_heads: 2
-    head_dim: 4  # embedding dimension is n_heads * head_dim
+    n_heads: 4
+    head_dim: 8  # embedding dimension is n_heads * head_dim
     dropout_prob: 0
     use_bias: False
   mask:
     is_activated: true
     is_trainable: true
     # Available masks: causal, trainable_additive, trainable_multiplicative 
-    type: trainable_multiplicative 
+    type: "causal" 
   classifier:
     param1: None
 
@@ -81,9 +85,9 @@ summary:
   save_train_stats:
     every_n_epochs: 1
   save_test_stats:
-    every_n_epochs: 10
-  save_model:
     every_n_epochs: -1
+  save_model:
+    every_n_epochs: 50
 
 checkpoints:
   load_model: 0
