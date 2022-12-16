@@ -23,7 +23,7 @@ class Chat:
         self.max_sequence_length = self.config.transformer.max_sequence_length
 
         # Maximum number of generated tokens.
-        self.max_num_tokens = 1000
+        self.max_num_tokens = 420
         self.temperature = 1.0
         self.do_sample = True
         self.top_k = 10
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     # model = CharFormer(config=config)
 
     ckpt_dir = config.dirs.weights
-    model_name = "shakespeare_epoch_0034" 
+    model_name = "shakespeare_epoch_0001" 
     load_checkpoint(model=model, ckpt_dir=ckpt_dir, model_name=model_name)
     model.to(config.trainer.device)
     model.eval()

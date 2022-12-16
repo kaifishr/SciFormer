@@ -99,6 +99,7 @@ class CharacterTransformer(nn.Module):
         print(f"Number of parameters: {sum(n_params)/1e6:.3f} M")
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # TODO: Assert that maximum sequence length is not exceeded.
         x = self.token_embedding(x)
         x = self.position_embedding(x)
         x = self.transformer_blocks(x)

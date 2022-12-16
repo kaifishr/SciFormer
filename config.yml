@@ -10,7 +10,7 @@ random_seed: 0
 # mnist, fmnist, cifar10, imagewoof, shakespeare
 dataloader:
   dataset: "shakespeare"
-  num_workers: 0
+  num_workers: 2
 
 ########
 # Data #
@@ -24,19 +24,19 @@ data:
 #########
 transformer:
   n_blocks: 4
-  max_sequence_length: 128
+  max_sequence_length: 150
   image_to_sequence:
     patch_size: 1
     # sequence_length: 64  # TODO: Move sequence_length here for image transformer.
   token_embedding:
     is_trainable: true
     # Available encoding schemes: random_normal, sinusoidal
-    encoding: "sinusoidal" 
+    encoding: "random_normal" 
   position_embedding:
     is_activated: true
     is_trainable: true
     # Available encoding schemes: ones, zeros, random_normal, sinusoidal
-    encoding: "zeros" 
+    encoding: "random_normal" 
   transformer_block:
     hidden_expansion: 2
     dropout_prob: 0
@@ -59,9 +59,9 @@ transformer:
 trainer:
   device: "gpu"   # gpu, cpu
   n_epochs: 500
-  batch_size: 256
+  batch_size: 2048
   weight_decay: 0
-  learning_rate: 2.0e-4
+  learning_rate: 6.0e-5
   # learning_rate_step_every: 200
   # learning_rate_gamma: 0.5
   lr_step_size: 200
