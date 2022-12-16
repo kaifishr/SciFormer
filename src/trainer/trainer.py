@@ -61,19 +61,19 @@ def run_training(model, dataloader, writer, config: Config) -> None:
     step_size = config.trainer.lr_step_size
     gamma = config.trainer.lr_gamma
 
-    trainloader, testloader = dataloader
+    train_loader, test_loader = dataloader
 
     # Add graph of model to Tensorboard.
     if config.summary.add_graph:
-        add_graph(model=model, dataloader=trainloader, writer=writer, config=config)
+        add_graph(model=model, dataloader=train_loader, writer=writer, config=config)
 
     # Add sample batch to Tensorboard.
     if config.summary.add_sample_batch:
         add_input_samples(
-            dataloader=trainloader, writer=writer, tag="train", global_step=0
+            dataloader=train_loader, writer=writer, tag="train", global_step=0
         )
         add_input_samples(
-            dataloader=testloader, writer=writer, tag="test", global_step=0
+            dataloader=test_loader, writer=writer, tag="test", global_step=0
         )
 
     learning_rate = config.trainer.learning_rate
@@ -98,10 +98,12 @@ def run_training(model, dataloader, writer, config: Config) -> None:
         model.train()
         t0 = time.time()
 
-        for x_data, y_data in trainloader:
+        for x_data, y_data in train_loader:
 
             # Get the inputs; data is a list of [inputs, labels]
             inputs, labels = x_data.to(device), y_data.to(device)
+            print(f"{inputs = }")
+            print(f"{labels = }")
 
             # Zero the parameter gradients
             optimizer.zero_grad()
@@ -112,6 +114,9 @@ def run_training(model, dataloader, writer, config: Config) -> None:
 
             # Backpropagation
             loss.backward()
+
+            # Clip gradients
+            torch.nn.utils.clip_grad_norm_(model.parameters(), config.trainer.grad_norm_clip)
 
             # Gradient descent
             optimizer.step()
@@ -148,7 +153,7 @@ def run_training(model, dataloader, writer, config: Config) -> None:
                 test_loss, test_accuracy = comp_stats_classification(
                     model=model,
                     criterion=criterion,
-                    data_loader=testloader,
+                    data_loader=test_loader,
                     device=device,
                 )
                 writer.add_scalar("test_loss", test_loss, global_step=n_update_steps)

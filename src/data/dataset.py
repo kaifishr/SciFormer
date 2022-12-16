@@ -33,10 +33,10 @@ class CharDataset(Dataset):
         self.char_to_index = {char: i for i, char in enumerate(chars)}
         self.index_to_char = {i: char for i, char in enumerate(chars)}
 
-        self.num_characters = len(chars)
+        self.num_tokens = len(chars)
 
         print(f"Total number of characters: {len(data)}")
-        print(f"Unique characteres: {self.num_characters}")
+        print(f"Unique characteres: {self.num_tokens}")
 
     def __len__(self):
         return len(self.data) - self.max_sequence_length

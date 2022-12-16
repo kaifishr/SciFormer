@@ -11,9 +11,8 @@ from torchvision.datasets.utils import download_url
 
 import  torchtext
 
-from ..config.config import Config
-
-from dataset import CharDataset
+from src.config.config import Config
+from src.data.dataset import CharDataset
 
 
 def seed_worker(worker_id):
@@ -184,22 +183,24 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         # dataset_url = "http://mattmahoney.net/dc/enwik8.zip"
         dataset_url = "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
 
-        data_dir = cwd + "./data/shakespeare"
-        torchtext.utils.download_from_url(url=dataset_url, root=data_dir)
-
         cwd = os.getcwd()
+
+        data_dir = cwd + "/data/shakespeare"
+        # torchtext.utils.download_from_url(url=dataset_url, root=data_dir)
+        download_url(url=dataset_url, root=data_dir)
+
         # with tarfile.open(cwd + "/data/imagewoof-160.tgz", "r:gz") as tar:
         #     tar.extractall(path=cwd + "/data")
 
-        data_path = cwd + "/input.txt"
+        data_path = data_dir + "/input.txt"
         with open(data_path, mode="r") as file:
             data = file.read()
 
         train_dataset = CharDataset(data=data, config=config)
         test_dataset = CharDataset(data="", config=config)
 
-        config.data.n_classes = train_dataset.num_characters
-        config.data.num_characters = train_dataset.num_characters
+        config.data.num_classes = train_dataset.num_tokens
+        config.data.num_tokens = train_dataset.num_tokens
 
     else:
         raise NotImplementedError(f"Dataloader for {dataset} not implemented.")

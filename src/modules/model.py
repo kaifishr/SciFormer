@@ -12,6 +12,8 @@ from .module import (
     Classifier,
 )
 
+from src.config.config import Config
+
 
 class ImageTransformer(nn.Module):
     """Isotropic multi-head self-attention transformer neural network."""
@@ -59,7 +61,7 @@ class CharacterTransformer(nn.Module):
     """Character-level isotropic multi-head self-attention 
     transformer neural network."""
     
-    def __init__(self, config: dict):
+    def __init__(self, config: Config):
         """Initializes image transformer."""
         super().__init__()
 
@@ -70,7 +72,13 @@ class CharacterTransformer(nn.Module):
         blocks = [TransformerBlock(config) for _ in range(n_blocks)]
         self.transformer_blocks = nn.Sequential(*blocks)
 
-        self.classifier = Classifier(config)
+        #####
+        # self.classifier = Classifier(config)
+        cfg_attention = config.transformer.self_attention
+        embedding_dim = cfg_attention.n_heads * cfg_attention.head_dim
+        num_tokens = config.data.num_tokens
+        self.classifier = nn.Linear(embedding_dim, num_tokens, bias=False)
+        #####
 
         self._count_model_parameters()
         self.apply(self._init_weights)
@@ -91,11 +99,15 @@ class CharacterTransformer(nn.Module):
         print(f"Number of parameters: {sum(n_params)/1e6:.3f} M")
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        print(x)
+        print(f"{x = }")
+        print(x.shape)
+        x = self.token_embedding(x)
+        print(f"{x = }")
+        print(x.shape)
+        x = self.position_embedding(x)
+        print(f"{x = }")
         print(x.shape)
         exit()
-        x = self.token_embedding(x)
-        x = self.position_embedding(x)
         x = self.transformer_blocks(x)
         x = self.classifier(x)
         return x
