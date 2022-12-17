@@ -51,7 +51,7 @@ transformer:
 ###########
 trainer:
   device: "gpu"   # gpu, cpu
-  n_epochs: 500
+  # n_epochs: 500
   num_update_steps: 10000000
   batch_size: 256
   weight_decay: 0
@@ -76,9 +76,12 @@ data:
 # Summary #
 ###########
 summary:
-  add_graph: false
-  add_sample_batch: false
-  add_hparams: false
+  save_train_stats:
+    every_n_updates: 1000
+  save_test_stats:
+    every_n_updates: -1
+  save_model:
+    every_n_updates: 1000
   add_patch_embeddings:
     every_n_updates: -1 
   add_position_embeddings:
@@ -89,12 +92,9 @@ summary:
     every_n_updates: 1000
   add_params_hist:
     every_n_updates: -1
-  save_train_stats:
-    every_n_updates: 1000
-  save_test_stats:
-    every_n_updates: -1
-  save_model:
-    every_n_updates: 1000
+  add_graph: false
+  add_sample_batch: false
+  add_hparams: false
 
 checkpoints:
   load_model: 0

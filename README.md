@@ -66,6 +66,7 @@ In which order the sequence is to be understood, can be achieved by encoding the
 
 > TODO: Use positional embedding in each attention block?
 
+
 ### Attention as a Soft Dictionary
 
 To get a better understanding of the *query*, *key*, and *value* nomenclature in the context of self-attention, the attention mechanism can be seen as a soft form of a dictionary. Let's consider the following example with a Python dictionary:
@@ -80,6 +81,7 @@ The example above show a "hard" dictionary, as the query gets you exactly the va
 
 It should also be noted, that in general a query can either be a request for retrieving data or to perform an action on the data, or both.
 
+
 ### Trainable / Parameterized Self-Attention
 
 As already mentioned, there are so far no trainable parameters in the self-attention operations outlined above. Introducing parameters that allow obtain trainable representations of *query* $\mathbf{q}$, *key* $\mathbf{k}$, and *value* $\mathbf{v}$, allows the attention mechanism to be more expressive and to learn more powerful representations of the input sequence.
@@ -91,6 +93,7 @@ $$
 \mathbf{k}_i = W_K \mathbf{x}_i + \mathbf{b}_K \\
 \mathbf{v}_i = W_V \mathbf{x}_i + \mathbf{b}_V
 $$
+
 
 ### Multi-head Self-Attention
 
@@ -104,6 +107,7 @@ $$X = \{X_{[:,0:k/h]}, \cdots, X_{[:,k-k/h:k]}\}$$
 
 
 # Transformer Types
+
 
 ## TextTransformer
 
@@ -120,11 +124,15 @@ A sequence of stacked `TransformerBlock`s consisting of a `MultiHeadSelfAttentio
 
 Finally, a `Classifier` module takes the output of the last `TransformerBlock` and applies a linear transformation to the network's final prediction.
 
+
 # Weight Visualization
+
 
 ## Patch Embedding
 
+
 ## Positional Embedding
+
 
 ## Attention Mask 
 
@@ -144,6 +152,7 @@ A simple random search method has been implemented to explore the model in more 
 
 ![Random search](./docs/images/hparams_random_search.png)
 
+
 # Discussion
 
 Running a few experiments showed that the model's test accuracy improves with an increased number of attention heads, head dimension, and sequence length (in that order). Adding more attention blocks always resulted in higher test accuracy.
@@ -154,9 +163,17 @@ Running a few experiments showed that the model's test accuracy improves with an
     - Use activations to create bias terms
     - $b = W_x x$
 
+
 # References
 
-[1] *An Image is Worth 16x16 Words*: https://arxiv.org/pdf/2010.11929.pdf
+[1] [*Attention Is All You Need*](https://arxiv.org/abs/1706.03762)
+
+[2] [*An Image is Worth 16x16 Words*](https://arxiv.org/pdf/2010.11929.pdf)
+
+[3] [*minGPT*](https://github.com/karpathy/minGPT)
+
+[4] [*Transformers from scratch*](https://peterbloem.nl/blog/transformers)
+
 
 # License
 
