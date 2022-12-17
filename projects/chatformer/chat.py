@@ -121,7 +121,7 @@ if __name__ == "__main__":
     # model = CharFormer(config=config)
 
     ckpt_dir = config.dirs.weights
-    model_name = "lexicap_" 
+    model_name = "lexicap" 
     load_checkpoint(model=model, ckpt_dir=ckpt_dir, model_name=model_name)
     config.trainer.device = torch.device("cpu")
     model.to(config.trainer.device)

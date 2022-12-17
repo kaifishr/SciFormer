@@ -4,7 +4,7 @@ from src.config.config import init_config
 from src.data.dataloader import get_dataloader
 from src.modules.model import ImageTransformer, CharacterTransformer
 from src.random_search.random_search import create_random_config_
-from src.trainer.trainer import trainer, Trainer
+from src.trainer.trainer import Trainer
 from src.utils.tools import set_random_seed
 
 
