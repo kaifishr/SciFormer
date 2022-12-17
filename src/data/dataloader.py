@@ -183,19 +183,16 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         config.data.input_shape = (1, 28, 28)
 
     elif dataset == "shakespeare":
-        # dataset_url = "http://mattmahoney.net/dc/enwik8.zip"
-        dataset_url = "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
-        # See: https://pytorch.org/text/stable/utils.html
-        cwd = os.getcwd()
 
-        data_dir = cwd + "/data/shakespeare"
-        # torchtext.utils.download_from_url(url=dataset_url, root=data_dir)
-        download_url(url=dataset_url, root=data_dir)
+        # Create folder for data.
+        data_dir = "data/shakespeare/"
+        pathlib.Path(data_dir).mkdir(parents=True, exist_ok=True)
 
-        # with tarfile.open(cwd + "/data/imagewoof-160.tgz", "r:gz") as tar:
-        #     tar.extractall(path=cwd + "/data")
+        # Download data if not already done.
+        dataset_url = "https://ocw.mit.edu/ans7870/6/6.006/s08/lecturenotes/files/t8.shakespeare.txt"
+        torchtext.utils.download_from_url(url=dataset_url, root=data_dir)
 
-        data_path = data_dir + "/input.txt"
+        data_path = data_dir + "/t8.shakespeare.txt"
         with open(data_path, mode="r") as file:
             data = file.read()
 
@@ -214,6 +211,10 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
 
         config.data.num_classes = train_dataset.num_tokens
         config.data.num_tokens = train_dataset.num_tokens
+
+    elif dataset == "enwik":
+        # dataset_url = "http://mattmahoney.net/dc/enwik8.zip"
+        raise NotImplementedError("Dataloader for {dataset} dataset not implemented.")
 
     else:
         raise NotImplementedError(f"Dataloader for {dataset} not implemented.")
