@@ -58,7 +58,6 @@ def run_training(model, dataloader, writer, config: Config) -> None:
     tag = config.tag
     device = config.trainer.device
     dataset = config.dataloader.dataset
-    n_epochs = config.trainer.n_epochs
     num_update_steps = config.trainer.num_update_steps
     step_size = config.trainer.lr_step_size
     gamma = config.trainer.lr_gamma
@@ -90,7 +89,6 @@ def run_training(model, dataloader, writer, config: Config) -> None:
     )
 
     update_step = 0  # num_updates?
-    epoch = 0
 
     while update_step < num_update_steps:
 
@@ -134,14 +132,6 @@ def run_training(model, dataloader, writer, config: Config) -> None:
             running_counter += labels.size(0)
 
             print(update_step)
-
-            if update_step % 1000 == 0:
-                writer.add_scalar("time_per_epoch", time.time() - t0, global_step=epoch)
-                writer.add_scalar("learning_rate", scheduler.get_last_lr()[0], global_step=epoch)
-
-                t0 = time.time()
-                scheduler.step()
-
             if config.summary.save_train_stats.every_n_updates > 0:
                 if update_step % config.summary.save_train_stats.every_n_updates == 0:
                     train_loss = running_loss / running_counter
@@ -149,63 +139,62 @@ def run_training(model, dataloader, writer, config: Config) -> None:
 
                     writer.add_scalar("train_loss", train_loss, global_step=update_step)
                     writer.add_scalar("train_accuracy", train_accuracy, global_step=update_step)
-                
+
+                    time_per_update = (time.time() - t0) / update_step 
+                    writer.add_scalar("time_per_update", time_per_update, global_step=update_step)
+                    writer.add_scalar("learning_rate", scheduler.get_last_lr()[0], global_step=update_step)
+
                     running_loss = 0.0
                     running_accuracy = 0.0
                     running_counter = 0
 
+                    t0 = time.time()
+                    scheduler.step()
+
                     print(f"{update_step:09d} {train_loss:.5f} {train_accuracy:.4f}")
 
-            # if config.summary.save_test_stats.every_n_updates > 0:
-            #     if update_step % config.summary.save_test_stats.every_n_epochs == 0:
-            #         test_loss, test_accuracy = comp_stats_classification(
-            #             model=model,
-            #             criterion=criterion,
-            #             data_loader=test_loader,
-            #             device=device,
-            #         )
-            #         writer.add_scalar("test_loss", test_loss, global_step=update_step)
-            #         writer.add_scalar("test_accuracy", test_accuracy, global_step=update_step)
+            if config.summary.save_test_stats.every_n_updates > 0:
+                if update_step % config.summary.save_test_stats.every_n_epochs == 0:
+                    test_loss, test_accuracy = comp_stats_classification(
+                        model=model,
+                        criterion=criterion,
+                        data_loader=test_loader,
+                        device=device,
+                    )
+                    writer.add_scalar("test_loss", test_loss, global_step=update_step)
+                    writer.add_scalar("test_accuracy", test_accuracy, global_step=update_step)
 
-            #         if config.summary.add_hparams:
-            #             add_hparams(
-            #                 writer,
-            #                 config,
-            #                 train_loss,
-            #                 train_accuracy,
-            #                 test_loss,
-            #                 test_accuracy,
-            #             )
+                    if config.summary.add_hparams:
+                        add_hparams(
+                            writer,
+                            config,
+                            train_loss,
+                            train_accuracy,
+                            test_loss,
+                            test_accuracy,
+                        )
 
-            # if config.summary.add_params_hist.every_n_updates > 0:
-            #     if update_step % config.summary.add_params_hist_every_n_updates == 0:
-            #         add_hist_params(model=model, writer=writer, global_step=update_step)
+            if config.summary.save_model.every_n_updates > 0:
+                if update_step % config.summary.save_model.every_n_updates == 0:
+                    model_name = f"{dataset}{f'_{tag}' if tag else ''}.pth"
+                    model_path = os.path.join(config.dirs.weights, model_name)
+                    torch.save(model.state_dict(), model_path)
 
-            #     if config.summary.save_model.every_n_updates > 0:
-            #         if update_step % config.summary.save_model.every_n_updates == 0:
-            #             model_name = (
-            #                 f"{dataset}_update_step_{update_step:04d}{f'_{tag}' if tag else ''}.pth"
-            #             )
-            #             model_path = os.path.join(config.dirs.weights, model_name)
-            #             torch.save(model.state_dict(), model_path)
+            if config.summary.add_params_hist.every_n_updates > 0:
+                if update_step % config.summary.add_params_hist.every_n_updates == 0:
+                    add_hist_params(model=model, writer=writer, global_step=update_step)
 
-            # if config.summary.add_patch_embeddings.every_n_updates > 0:
-            #     if update_step % config.summary.add_patch_embeddings.every_n_updates == 0:
-            #         add_patch_embedding_weights(
-            #             model=model, writer=writer, global_step=update_step
-            #         )
+            if config.summary.add_patch_embeddings.every_n_updates > 0:
+                if update_step % config.summary.add_patch_embeddings.every_n_updates == 0:
+                    add_patch_embedding_weights(model=model, writer=writer, global_step=update_step)
 
             if config.summary.add_token_embeddings.every_n_updates > 0:
                 if update_step % config.summary.add_token_embeddings.every_n_updates == 0:
-                    add_token_embedding_weights(
-                        model=model, writer=writer, global_step=update_step
-                    )
+                    add_token_embedding_weights(model=model, writer=writer, global_step=update_step)
 
             if config.summary.add_position_embeddings.every_n_updates > 0:
                 if update_step % config.summary.add_position_embeddings.every_n_updates == 0:
-                    add_position_embedding_weights(
-                        model=model, writer=writer, global_step=update_step
-                    )
+                    add_position_embedding_weights(model=model, writer=writer, global_step=update_step)
 
             if config.summary.add_mask_weights.every_n_updates > 0:
                 if update_step % config.summary.add_mask_weights.every_n_updates == 0:

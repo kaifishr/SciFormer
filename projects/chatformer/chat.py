@@ -16,7 +16,7 @@ class Chat:
 
     def __init__(self, model: torch.nn.Module, dataset: Dataset, config: Config):
         self.model = model
-        self.dataset =dataset 
+        self.dataset = dataset 
         self.config = config
 
         self.device = self.config.trainer.device
@@ -66,6 +66,9 @@ class Chat:
             # Add index of most likely token to running sequence.
             x = torch.cat((x, index_next_token), dim=-1) 
 
+        # Remove prompt from sequence:
+        x = x[:, len(input_text):]
+
         output_text = "".join([dataset.index_to_char[int(index)] for index in x[0]])
 
         return output_text
@@ -74,25 +77,27 @@ class Chat:
         """Runs chat."""
         is_running = True
 
-        print("Hello!\n")
+        print("\nPlease enter a prompt.\n")
 
         while is_running:
-            time.sleep(0.1)
+            time.sleep(0.01)
 
             input_text = input()
 
             if input_text == "exit":
                 is_running = False
+            elif input_text == "":
+                continue
             # input_text = "What is your purpose?"
 
             # TODO: Check if input text is not too long (max sequence length).
             # TODO: Check if input characters are valid.
+            # TODO: Remove trailing whitespace from input.
 
             # Feed text to model
-            output_text = self._generate(input_text)
-
-            print(f"\n{output_text}\n")
-
+            if is_running:
+                output_text = self._generate(input_text)
+                print(f"\n{output_text}\n")
 
         print("Bye!")
 
@@ -116,8 +121,9 @@ if __name__ == "__main__":
     # model = CharFormer(config=config)
 
     ckpt_dir = config.dirs.weights
-    model_name = "shakespeare_epoch_0000" 
+    model_name = "lexicap_" 
     load_checkpoint(model=model, ckpt_dir=ckpt_dir, model_name=model_name)
+    config.trainer.device = torch.device("cpu")
     model.to(config.trainer.device)
     model.eval()
 
