@@ -7,7 +7,7 @@ random_seed: 0
 ##############
 # Dataloader #
 ##############
-# mnist, fmnist, cifar10, imagewoof, shakespeare
+# mnist, fmnist, cifar10, imagewoof, shakespeare, lexicap
 dataloader:
   dataset: "shakespeare"
   num_workers: 2

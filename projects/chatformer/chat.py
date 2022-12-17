@@ -116,7 +116,7 @@ if __name__ == "__main__":
     # model = CharFormer(config=config)
 
     ckpt_dir = config.dirs.weights
-    model_name = "shakespeare_epoch_0001" 
+    model_name = "shakespeare_epoch_0000" 
     load_checkpoint(model=model, ckpt_dir=ckpt_dir, model_name=model_name)
     model.to(config.trainer.device)
     model.eval()

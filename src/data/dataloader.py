@@ -1,15 +1,18 @@
 import os
+import re
 import tarfile
+import zipfile
+import pathlib
 
-import numpy as np
+import numpy
 import random
+import tqdm
 import torch
+import torchtext
 import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torchvision.datasets.utils import download_url
-
-import  torchtext
 
 from src.config.config import Config
 from src.data.dataset import CharDataset
@@ -18,7 +21,7 @@ from src.data.dataset import CharDataset
 def seed_worker(worker_id):
     """Seed dataloader workers."""
     worker_seed = torch.initial_seed() % 2**32
-    np.random.seed(worker_seed)
+    numpy.random.seed(worker_seed)
     random.seed(worker_seed)
 
 
@@ -77,11 +80,11 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
     elif dataset == "cifar10":
 
         cifar10 = torchvision.datasets.CIFAR10(root="./data", train=True, download=True)
-        mean = np.mean(
-            np.array(cifar10.data / 255.0), axis=(0, 1, 2)
+        mean = numpy.mean(
+            numpy.array(cifar10.data / 255.0), axis=(0, 1, 2)
         )  # [0.49139968 0.48215841 0.44653091]
-        std = np.std(
-            np.array(cifar10.data / 255.0), axis=(0, 1, 2)
+        std = numpy.std(
+            numpy.array(cifar10.data / 255.0), axis=(0, 1, 2)
         )  # [0.24703223 0.24348513 0.26158784]
 
         transform_train = transforms.Compose(
@@ -115,8 +118,8 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
     elif dataset == "mnist":
 
         mnist = torchvision.datasets.MNIST(root="./data", train=True, download=True)
-        mean = np.mean(np.array(mnist.data / 255.0), axis=(0, 1, 2))  
-        std = np.std(np.array(mnist.data / 255.0), axis=(0, 1, 2))
+        mean = numpy.mean(numpy.array(mnist.data / 255.0), axis=(0, 1, 2))  
+        std = numpy.std(numpy.array(mnist.data / 255.0), axis=(0, 1, 2))
 
         transform_train = transforms.Compose(
             [
@@ -148,8 +151,8 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
     elif dataset == "fmnist":
 
         mnist = torchvision.datasets.FashionMNIST(root="./data", train=True, download=True)
-        mean = np.mean(np.array(mnist.data / 255.0), axis=(0, 1, 2))  
-        std = np.std(np.array(mnist.data / 255.0), axis=(0, 1, 2))
+        mean = numpy.mean(numpy.array(mnist.data / 255.0), axis=(0, 1, 2))  
+        std = numpy.std(numpy.array(mnist.data / 255.0), axis=(0, 1, 2))
 
         transform_train = transforms.Compose(
             [
@@ -202,6 +205,16 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         config.data.num_classes = train_dataset.num_tokens
         config.data.num_tokens = train_dataset.num_tokens
 
+    elif dataset == "lexicap":
+
+        data = load_lexicap()
+
+        train_dataset = CharDataset(data=data, config=config)
+        test_dataset = CharDataset(data="", config=config)
+
+        config.data.num_classes = train_dataset.num_tokens
+        config.data.num_tokens = train_dataset.num_tokens
+
     else:
         raise NotImplementedError(f"Dataloader for {dataset} not implemented.")
 
@@ -234,3 +247,50 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
     )
 
     return trainloader, testloader
+
+
+def load_lexicap() -> str:
+    """Downloads and cleans transcripts from Lex Fridman episodes.
+
+    Script removes time stamps and merges all transcript into a (currently) ~30MB file.
+
+    Transcripts can be found here: https://karpathy.ai/lexicap/
+    """
+
+    # Create folder for data.
+    data_dir = "data/lexicap/"
+    pathlib.Path(data_dir).mkdir(parents=True, exist_ok=True)
+
+    # Download data if not already done.
+    dataset_url = "https://karpathy.ai/lexicap/data.zip"
+    torchtext.utils.download_from_url(url=dataset_url, root=data_dir)
+
+    # Define regular expression pattern to remove time stamps.
+    pattern = r"(\s)?(\d{1,2}:)?\d{2}:\d{2}.\d{3} --> (\d{1,2}:)?\d{2}:\d{2}.\d{3}"
+
+    # Compile the regular expression
+    regex = re.compile(pattern)
+
+    transcripts = []
+
+    cwd = os.getcwd()
+
+    with zipfile.ZipFile(cwd + "/" + data_dir + "data.zip", mode="r") as zip_file:
+        for name in tqdm.tqdm(zip_file.namelist(), desc="Cleaning"):
+            # There are "small" and "large" files
+            # for every transcript. Here we go with "large".
+            if name.endswith("large.vtt"):
+                with zip_file.open(name, mode="r") as file:
+                    # Skip the header.
+                    file.readline()
+                    # Encode data.
+                    data = str(file.read(), encoding="utf-8")
+                    # Remove new lines. 
+                    data = " ".join(data.split())
+                    # Remove time stamps with pattern defined above.
+                    data = regex.sub("", data)
+                    transcripts.append(data)
+
+    transcripts = " ".join(transcripts)
+
+    return transcripts
