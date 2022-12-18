@@ -5,7 +5,7 @@ from src.data.dataloader import get_dataloader
 from src.modules.model import ImageTransformer, CharacterTransformer
 from src.random_search.random_search import create_random_config_
 from src.trainer.trainer import Trainer
-from src.utils.tools import set_random_seed
+from src.utils.tools import set_random_seed, load_checkpoint
 
 
 def experiment_long_run():
@@ -72,10 +72,19 @@ def experiment_text():
 
     # Get the model
     model = CharacterTransformer(config=config)
+
+    if config.load_model.is_activated:
+        load_checkpoint(
+            model=model, 
+            ckpt_dir=config.dirs.weights, 
+            model_name=config.load_model.model_name
+        )
+        print("bla")
+        exit()
+
     model.to(config.trainer.device)
 
     print(config)
-    # trainer(model=model, dataloader=dataloader, config=config)
     trainer = Trainer(model=model, dataloader=dataloader, config=config)
     trainer.run()
 

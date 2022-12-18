@@ -55,7 +55,7 @@ trainer:
   num_update_steps: 10000000
   batch_size: 64
   weight_decay: 0
-  learning_rate: 6.0e-5
+  learning_rate: 2.0e-4
   # learning_rate_step_every: 200
   # learning_rate_gamma: 0.5
   lr_step_size: 200
@@ -96,9 +96,10 @@ summary:
   add_sample_batch: false
   add_hparams: false
 
-checkpoints:
-  load_model: 0
-  model_path: 0
+load_model:
+  is_activated: true
+  model_name: "lexicap_v2"
+  model_path: -1
 
 ###############
 # Directories #
