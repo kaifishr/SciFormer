@@ -61,26 +61,25 @@ def experiment_random_search():
 
 def experiment_text():
 
-    # Get configuration file
+    # Get configuration file.
     config = init_config(file_path="config.yml")
 
-    # Seed random number generator
+    # Seed random number generator.
     set_random_seed(seed=config.random_seed)
 
-    # Get dataloader
+    # Get dataloader.
     dataloader = get_dataloader(config=config)
 
-    # Get the model
+    # Get the model.
     model = CharacterTransformer(config=config)
 
+    # Load pre-trained model.
     if config.load_model.is_activated:
         load_checkpoint(
             model=model, 
             ckpt_dir=config.dirs.weights, 
             model_name=config.load_model.model_name
         )
-        print("bla")
-        exit()
 
     model.to(config.trainer.device)
 

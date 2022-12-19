@@ -140,7 +140,7 @@ class Trainer:
                         writer.add_scalar("train_loss", train_loss, global_step=update_step)
                         writer.add_scalar("train_accuracy", train_accuracy, global_step=update_step)
 
-                        time_per_update = (time.time() - t0) / update_step 
+                        time_per_update = (time.time() - t0) / running_counter 
                         writer.add_scalar("time_per_update", time_per_update, global_step=update_step)
                         writer.add_scalar("learning_rate", scheduler.get_last_lr()[0], global_step=update_step)
 

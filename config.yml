@@ -16,8 +16,8 @@ dataloader:
 # Model #
 #########
 transformer:
-  n_blocks: 8
-  max_sequence_length: 512
+  n_blocks: 6
+  max_sequence_length: 128
   image_to_sequence:
     patch_size: 1
     # sequence_length: 64  # TODO: Move sequence_length here for image transformer.
@@ -29,15 +29,15 @@ transformer:
     is_activated: true
     is_trainable: true
     # Available encoding schemes: ones, zeros, random_normal, sinusoidal
-    encoding: "sinusoidal" 
+    encoding: "random_normal" 
   transformer_block:
     hidden_expansion: 4
-    dropout_prob: 0
+    dropout_prob: 0.05
   self_attention:
-    n_heads: 8
-    head_dim: 16  # embedding dimension is n_heads * head_dim
-    dropout_prob: 0
-    use_bias: False
+    n_heads: 12
+    head_dim: 32  # embedding dimension is n_heads * head_dim
+    dropout_prob: 0.05
+    use_bias: True 
   mask:
     is_activated: true
     is_trainable: true
@@ -53,9 +53,9 @@ trainer:
   device: "gpu"   # gpu, cpu
   # n_epochs: 500
   num_update_steps: 10000000
-  batch_size: 64
+  batch_size: 256
   weight_decay: 0
-  learning_rate: 2.0e-4
+  learning_rate: 8.0e-5
   # learning_rate_step_every: 200
   # learning_rate_gamma: 0.5
   lr_step_size: 200
@@ -64,6 +64,11 @@ trainer:
   gradient_clipping:
     is_activated: true
     max_norm: 1.0
+
+load_model:
+  is_activated: false 
+  model_name: -1
+  model_path: -1
 
 ########
 # Data #
@@ -95,11 +100,6 @@ summary:
   add_graph: false
   add_sample_batch: false
   add_hparams: false
-
-load_model:
-  is_activated: true
-  model_name: "lexicap_v2"
-  model_path: -1
 
 ###############
 # Directories #
