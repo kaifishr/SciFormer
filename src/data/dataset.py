@@ -38,6 +38,8 @@ class CharDataset(Dataset):
         print(f"Number of characters: {len(data)/1e6:.3f} M\n")
         print(f"Unique characteres: {self.num_tokens}\n")
 
+        self.look_back = 200
+
     def __len__(self):
         return len(self.data) - self.max_sequence_length
 
@@ -68,6 +70,12 @@ class CharDataset(Dataset):
         Args:
             idx: Index to access string stored in data.
         """
+        # Try to find the start of a sentence.
+        if idx > self.look_back:
+            idx_offset = self.data[idx-self.look_back:idx].rfind(".")
+            idx_offset = idx_offset if idx_offset > -1 else 0
+            idx -= (self.look_back - idx_offset - 2)  # -2 adjusts for period followed by a blank space.
+
         char_sequence = self.data[idx:idx + self.max_sequence_length + 1]
         int_sequence = [self.char_to_index[char] for char in char_sequence]
         x = torch.tensor(data=int_sequence[:-1], dtype=torch.long)
