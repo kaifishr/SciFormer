@@ -58,9 +58,9 @@ class ImageTransformer(nn.Module):
 
 
 class CharacterTransformer(nn.Module):
-    """Character-level isotropic multi-head self-attention 
+    """Character-level isotropic multi-head self-attention
     transformer neural network."""
-    
+
     def __init__(self, config: Config):
         """Initializes image transformer."""
         super().__init__()

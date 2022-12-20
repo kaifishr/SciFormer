@@ -76,9 +76,9 @@ def experiment_text():
     # Load pre-trained model.
     if config.load_model.is_activated:
         load_checkpoint(
-            model=model, 
-            ckpt_dir=config.dirs.weights, 
-            model_name=config.load_model.model_name
+            model=model,
+            ckpt_dir=config.dirs.weights,
+            model_name=config.load_model.model_name,
         )
 
     model.to(config.trainer.device)

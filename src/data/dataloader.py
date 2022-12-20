@@ -28,7 +28,7 @@ def seed_worker(worker_id):
 def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
     """Creates dataloader for specified dataset."""
 
-    dataset = config.dataloader.dataset 
+    dataset = config.dataloader.dataset
     num_workers = config.dataloader.num_workers
     batch_size = config.trainer.batch_size
 
@@ -98,10 +98,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         )
 
         transform_test = transforms.Compose(
-            [
-                transforms.ToTensor(), 
-                transforms.Normalize(mean, std)
-            ]
+            [transforms.ToTensor(), transforms.Normalize(mean, std)]
         )
 
         train_dataset = torchvision.datasets.CIFAR10(
@@ -118,7 +115,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
     elif dataset == "mnist":
 
         mnist = torchvision.datasets.MNIST(root="./data", train=True, download=True)
-        mean = numpy.mean(numpy.array(mnist.data / 255.0), axis=(0, 1, 2))  
+        mean = numpy.mean(numpy.array(mnist.data / 255.0), axis=(0, 1, 2))
         std = numpy.std(numpy.array(mnist.data / 255.0), axis=(0, 1, 2))
 
         transform_train = transforms.Compose(
@@ -131,10 +128,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         )
 
         transform_test = transforms.Compose(
-            [
-                transforms.ToTensor(), 
-                transforms.Normalize(mean, std)
-            ]
+            [transforms.ToTensor(), transforms.Normalize(mean, std)]
         )
 
         train_dataset = torchvision.datasets.MNIST(
@@ -150,8 +144,10 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
 
     elif dataset == "fmnist":
 
-        mnist = torchvision.datasets.FashionMNIST(root="./data", train=True, download=True)
-        mean = numpy.mean(numpy.array(mnist.data / 255.0), axis=(0, 1, 2))  
+        mnist = torchvision.datasets.FashionMNIST(
+            root="./data", train=True, download=True
+        )
+        mean = numpy.mean(numpy.array(mnist.data / 255.0), axis=(0, 1, 2))
         std = numpy.std(numpy.array(mnist.data / 255.0), axis=(0, 1, 2))
 
         transform_train = transforms.Compose(
@@ -165,10 +161,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         )
 
         transform_test = transforms.Compose(
-            [
-                transforms.ToTensor(), 
-                transforms.Normalize(mean, std)
-            ]
+            [transforms.ToTensor(), transforms.Normalize(mean, std)]
         )
 
         train_dataset = torchvision.datasets.FashionMNIST(
@@ -286,7 +279,7 @@ def load_lexicap() -> str:
                     file.readline()
                     # Encode data.
                     data = str(file.read(), encoding="utf-8")
-                    # Remove new lines. 
+                    # Remove new lines.
                     data = " ".join(data.split())
                     # Remove time stamps with pattern defined above.
                     data = regex.sub("", data)

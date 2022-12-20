@@ -164,7 +164,9 @@ def add_patch_embedding_weights(
             writer.add_images(name, weight_rescaled, global_step, dataformats="NCHW")
 
 
-def add_position_embedding_weights(writer: SummaryWriter, model: nn.Module, global_step: int) -> None:
+def add_position_embedding_weights(
+    writer: SummaryWriter, model: nn.Module, global_step: int
+) -> None:
     """Adds visualization of position embeddings Tensorboard."""
     for name, module in model.named_modules():
         if isinstance(module, PositionEmbedding):
@@ -175,7 +177,9 @@ def add_position_embedding_weights(writer: SummaryWriter, model: nn.Module, glob
             writer.add_image(name, embedding_rescaled, global_step, dataformats="HW")
 
 
-def add_token_embedding_weights(writer: SummaryWriter, model: nn.Module, global_step: int) -> None:
+def add_token_embedding_weights(
+    writer: SummaryWriter, model: nn.Module, global_step: int
+) -> None:
     """Adds visualization of token embeddings to Tensorboard."""
     for name, module in model.named_modules():
         if isinstance(module, TokenEmbedding):

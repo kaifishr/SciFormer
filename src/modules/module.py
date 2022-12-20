@@ -121,7 +121,7 @@ class TokenEmbedding(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Receives sequences of token identifiers and returns embedding.
-        
+
         Args:
             x: Integer tensor holding integer token identifiers.
 
@@ -129,10 +129,9 @@ class TokenEmbedding(nn.Module):
             Embedded tokens.
         """
         # x = self.embedding(x)  # TODO: use this later with nn.Embedding
-        x = self.embedding[x]    # TODO: Test. Seems to work as well.
+        x = self.embedding[x]  # TODO: Test. Seems to work as well.
         # x = F.embedding(x, self.embedding)  # TODO: Test.
         return x
-
 
 
 class PositionEmbedding(nn.Module):
@@ -318,17 +317,11 @@ class MultiHeadSelfAttention(nn.Module):
 
         # Split keys, queries, and values for processing in different heads.
         keys = keys.view(batch_size, sequence_length, self.n_heads, self.head_dim)
-        queries = queries.view(
-            batch_size, sequence_length, self.n_heads, self.head_dim
-        )
-        values = values.view(
-            batch_size, sequence_length, self.n_heads, self.head_dim
-        )
+        queries = queries.view(batch_size, sequence_length, self.n_heads, self.head_dim)
+        values = values.view(batch_size, sequence_length, self.n_heads, self.head_dim)
 
         # Scaled dot-product self-attention
-        out = (
-            torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / embedding_dim**0.5
-        )
+        out = torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / embedding_dim**0.5
 
         out = self.mask(out)
         # if self.use_mask:
@@ -341,9 +334,7 @@ class MultiHeadSelfAttention(nn.Module):
 
         # Second part of scaled dot-product self-attention.
         out = torch.einsum("bhql,blhd->bqhd", [out, values])
-        out = out.reshape(
-            batch_size, sequence_length, self.n_heads * self.head_dim
-        )
+        out = out.reshape(batch_size, sequence_length, self.n_heads * self.head_dim)
 
         # Unify all heads in linear transformation.
         out = self.linear(out)
@@ -392,7 +383,9 @@ class Classifier(nn.Module):
         """Initializes the classifier."""
         super().__init__()
         cfg_attention = config.transformer.self_attention
-        sequence_length = cfg_attention.sequence_length  # TODO: For image transformer use here "config.transformer.img_to_sequence.sequence_length"
+        sequence_length = (
+            cfg_attention.sequence_length
+        )  # TODO: For image transformer use here "config.transformer.img_to_sequence.sequence_length"
         embedding_dim = cfg_attention.n_heads * cfg_attention.head_dim
         n_dims_out = config.data.n_classes
 
