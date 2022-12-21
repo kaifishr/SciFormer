@@ -1,8 +1,8 @@
 ##################
 # ImageTransformer
 ##################
-tag: Null
-random_seed: 0
+tag: "h64d4"
+random_seed: 42
 
 ##############
 # Dataloader #
@@ -34,8 +34,8 @@ transformer:
     hidden_expansion: 4
     dropout_prob: 0.05
   self_attention:
-    n_heads: 16
-    head_dim: 64  # embedding dimension is n_heads * head_dim
+    n_heads: 64
+    head_dim: 4  # embedding dimension is n_heads * head_dim
     dropout_prob: 0.05
     use_bias: True 
   mask:
@@ -52,7 +52,7 @@ transformer:
 trainer:
   device: "gpu"   # gpu, cpu
   # n_epochs: 500
-  num_update_steps: 100000
+  num_update_steps: 10000
   batch_size: 64
   weight_decay: 0
   learning_rate: 1.0e-6
@@ -66,8 +66,8 @@ trainer:
     max_norm: 1.0
 
 load_model:
-  is_activated: true 
-  model_name: "lexicap1"
+  is_activated: false 
+  model_name: "lexicap3"
   model_path: -1
 
 ########
