@@ -1,7 +1,7 @@
 ##################
 # ImageTransformer
 ##################
-tag: "h64d4"
+tag: ""
 random_seed: 42
 
 ##############
@@ -16,7 +16,7 @@ dataloader:
 # Model #
 #########
 transformer:
-  n_blocks: 8
+  n_blocks: 32
   max_sequence_length: 128
   image_to_sequence:
     patch_size: 1
@@ -31,11 +31,11 @@ transformer:
     # Available encoding schemes: ones, zeros, random_normal, sinusoidal
     encoding: "random_normal" 
   transformer_block:
-    hidden_expansion: 4
+    hidden_expansion: 2
     dropout_prob: 0.05
   self_attention:
-    n_heads: 64
-    head_dim: 4  # embedding dimension is n_heads * head_dim
+    n_heads: 1
+    head_dim: 512  # embedding dimension is n_heads * head_dim
     dropout_prob: 0.05
     use_bias: True 
   mask:
@@ -52,7 +52,7 @@ transformer:
 trainer:
   device: "gpu"   # gpu, cpu
   # n_epochs: 500
-  num_update_steps: 10000
+  num_update_steps: 100000
   batch_size: 64
   weight_decay: 0
   learning_rate: 1.0e-6
@@ -86,15 +86,15 @@ summary:
   save_test_stats:
     every_n_updates: -1
   save_model:
-    every_n_updates: 2000
+    every_n_updates: 5000
   add_patch_embeddings:
     every_n_updates: -1 
   add_position_embeddings:
-    every_n_updates: 2000
+    every_n_updates: 5000
   add_token_embeddings:
-    every_n_updates: 2000
+    every_n_updates: 5000
   add_mask_weights:
-    every_n_updates: 2000
+    every_n_updates: 5000
   add_params_hist:
     every_n_updates: -1
   add_graph: false

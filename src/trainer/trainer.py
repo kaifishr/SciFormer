@@ -84,7 +84,7 @@ class Trainer:
         # self.scheduler = torch.optim.lr_scheduler.StepLR(
         #     self.optimizer, step_size=step_size, gamma=gamma
         # )
-        max_learning_rate = 0.002
+        max_learning_rate = 0.001
         self.scheduler = torch.optim.lr_scheduler.OneCycleLR(
             self.optimizer, max_lr=max_learning_rate, total_steps=self.num_update_steps
         )
@@ -102,7 +102,7 @@ class Trainer:
 
         train_loader, test_loader = self.dataloader
 
-        update_step = 0 # 60000  # num_updates, num_batch_updates?
+        update_step = 0  # 60000  # num_updates, num_batch_updates?
         # self.scheduler.last_epoch = update_step
 
         while update_step < self.num_update_steps:

@@ -12,7 +12,20 @@ from src.utils.tools import load_checkpoint
 
 
 class Chat:
+    """Chat class.
+
+    Uses a autoregressive model to generate text provided a prompt.
+
+    Attributes:
+        model: An autoregressive model.
+        dataset: Dataset model has been trained on.
+        config: Configuration.
+        valid_characters: Legal characters.
+
+    """
+
     def __init__(self, model: torch.nn.Module, dataset: Dataset, config: Config):
+        """Initializes chat class."""
         self.model = model
         self.dataset = dataset
         self.config = config
@@ -25,7 +38,7 @@ class Chat:
         # Maximum number of generated tokens.
         self.max_num_tokens = 200
         self.temperature = 0.6
-        self.do_sample = True
+        self.do_sample = False
         self.top_k = 10
 
     @torch.no_grad()
@@ -97,8 +110,7 @@ class Chat:
 
         # Test model with some simple prompts.
         prompts = [
-            "You are very intelligent. You know mathematics. You are very good at it. What is the sum of the numbers 1 and 2?",
-            "You are very intelligent. You know mathematics and you are very smart. What is the product of the numbers 2 and 4?",
+            "1 is one bigger than 0. 2 is one bigger than 1. 3 is one bigger than 2. What is the sum of 1 and 2?",
         ]
         for prompt in prompts:
             print(f"\n{prompt}\n")
@@ -116,10 +128,6 @@ class Chat:
             elif prompt == "":
                 continue
 
-            # TODO: Check if input text is not too long (max sequence length).
-            # TODO: Check if input characters are valid.
-            # TODO: Remove trailing whitespace from input.
-
             # Feed text to model
             if is_running and self._is_valid_prompt(prompt=prompt):
                 output = self._generate(prompt=prompt)
@@ -134,7 +142,8 @@ if __name__ == "__main__":
     print(cwd)
 
     # Get configuration file
-    config_path = "weights/config4.yml"
+    # config_path = "weights/config4.yml"
+    config_path = "config.yml"
     config = init_config(file_path=config_path)
 
     # Get dataloader and dataset.
@@ -148,9 +157,9 @@ if __name__ == "__main__":
     # model = torch.jit.script(model)
 
     ckpt_dir = config.dirs.weights
-    model_name = "lexicap4"
+    model_name = "lexicap"
     load_checkpoint(model=model, ckpt_dir=ckpt_dir, model_name=model_name)
-    # config.trainer.device = torch.device("cpu")
+    config.trainer.device = torch.device("cpu")
     model.to(config.trainer.device)
     model.eval()
 
