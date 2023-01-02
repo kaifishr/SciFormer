@@ -141,41 +141,17 @@ The meaning of words often depends on their position in a sentence. As the atten
 
 # Transformer Types
 
+The transformer implementations in this repository use a simple configuration of stacked transformer blocks without encoder-decoder structure. 
 
 
-## TextTransformer
+## CharacterTransformer
 
 Transformer neural networks used for text generation are autoregressive models. However, autoregressive models are not limited to generating text but can also used to generate speech, music to name but a few. An autoregressive model receives a sequence of input tokens and predicts a probability distribution over the next index in the sequence.
 
 
 ## ImageTransformer
 
-This image transformer implementation uses a simple configuration of stacked transformer blocks without encoder-decoder structure and consists of three main blocks: 
-
-The `ImageToSequence` module transforms image data of shape `(channels, height, width)` to a sequence of token embeddings of shape `(sequence_length, embedding_dim)`. The image to sequence transformation is implemented using a `Conv2d` operation as patch embedding with `kernel_size` = `stride`. Patch embedding downsamples the image and allows transformer architectures even for images of high resolution. The `ImageToSequence` module is purely linear.
-
-A sequence of stacked `TransformerBlock`s consisting of a `MultiHeadSelfAttention` module followed by a standard fully connected neural network.
-
-Finally, a `Classifier` module takes the output of the last `TransformerBlock` and applies a linear transformation to the network's final prediction.
-
-
-# Weight Visualization
-
-
-## Patch Embedding
-
-
-## Positional Embedding
-
-
-## Attention Mask 
-
-
-# TODO:
-
-- Make attention fully "in-context"
-    - Use activations to create bias terms
-    - $b = W_x x$
+The `ImageToSequence` module transforms image data of shape `(channels, height, width)` to a sequence of token embeddings of shape `(sequence_length, embedding_dim)`. The image to sequence transformation is implemented using a `Conv2d` operation as patch embedding with `kernel_size` = `stride`. Patch embedding downsamples the image and allows to use transformer architectures even for high resolution images. The `ImageToSequence` module is purely linear. A sequence of stacked `TransformerBlock`s consisting of a `MultiHeadSelfAttention` module followed by a standard fully connected neural network. Finally, a `Classifier` module takes the output of the last `TransformerBlock` and applies a linear transformation to the network's final prediction.
 
 
 # References

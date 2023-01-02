@@ -416,9 +416,7 @@ class SequenceClassifier(nn.Module):
         self.classifier = nn.Sequential(
             nn.LayerNorm(embedding_dim),
             SwapAxes(axis0=-2, axis1=-1),
-            nn.Linear(
-                in_features=max_sequence_length, out_features=out_sequence_length
-            ),
+            nn.Linear(in_features=max_sequence_length, out_features=out_sequence_length),
             SwapAxes(axis0=-2, axis1=-1),
             nn.Linear(in_features=embedding_dim, out_features=num_classes),
         )

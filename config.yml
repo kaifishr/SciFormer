@@ -1,7 +1,7 @@
 ###############
 # Transformer #
 ###############
-tag: ""
+tag: "2"
 random_seed: 42
 
 ##############
@@ -16,9 +16,9 @@ dataloader:
 # Model #
 #########
 transformer:
-  n_blocks: 8
+  n_blocks: 4
   max_sequence_length: 128
-  out_sequence_length: 128
+  out_sequence_length: 64
   image_to_sequence:
     patch_size: 1
     # sequence_length: 64  # TODO: Move sequence_length here for image transformer.
@@ -35,8 +35,8 @@ transformer:
     hidden_expansion: 2
     dropout_prob: 0
   self_attention:
-    n_heads: 4
-    head_dim: 128  # embedding dimension is n_heads * head_dim
+    n_heads: 2
+    head_dim: 256  # embedding dimension is n_heads * head_dim
     dropout_prob: 0
     use_bias: true
   mask:
@@ -44,8 +44,6 @@ transformer:
     is_trainable: true
     # Available masks: causal, trainable_additive, trainable_multiplicative 
     type: "trainable_additive" 
-  classifier:
-    param1: None
 
 ###########
 # Trainer #
@@ -65,7 +63,7 @@ trainer:
 
 load_model:
   is_activated: false 
-  model_name: "books"
+  model_name: "books_1"
   model_path: -1
 
 ########
