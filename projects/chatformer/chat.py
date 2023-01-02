@@ -74,7 +74,7 @@ class Chat:
             # Low temperature: make model more confident (knowledge retrieval).
             # Take first prediction as it is probably associated with the
             # highest confidence.
-            logits = logits[:, 0, :] / self.temperature
+            logits = logits[:, -1, :] / self.temperature
 
             # Convert logits to probabilities.
             probabilities = F.softmax(input=logits, dim=-1)
