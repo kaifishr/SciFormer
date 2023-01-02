@@ -10,7 +10,6 @@ from .module import (
     PositionEmbedding,
     TransformerBlock,
     Classifier,
-    SequenceClassifier,
     TokenClassifier
 )
 
@@ -68,7 +67,6 @@ class CharacterTransformer(nn.Module):
         blocks = [TransformerBlock(config) for _ in range(n_blocks)]
         self.transformer_blocks = nn.Sequential(*blocks)
 
-        # self.classifier = SequenceClassifier(config=config)
         self.classifier = TokenClassifier(config=config)
 
         self.apply(self._init_weights)

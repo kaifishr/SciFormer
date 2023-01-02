@@ -32,7 +32,6 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
     num_workers = config.dataloader.num_workers
     batch_size = config.trainer.batch_size
     max_sequence_length = config.transformer.max_sequence_length
-    out_sequence_length = config.transformer.out_sequence_length
 
     if dataset == "imagewoof":
 
@@ -191,11 +190,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         with open(data_path, mode="r") as file:
             data = file.read()
 
-        train_dataset = CharDataset(
-            data=data,
-            input_length=max_sequence_length,
-            output_length=out_sequence_length,
-        )
+        train_dataset = CharDataset(data=data,input_length=max_sequence_length)
         test_dataset = train_dataset
 
         config.data.num_classes = train_dataset.num_tokens
@@ -205,11 +200,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
 
         data = load_lexicap()
 
-        train_dataset = CharDataset(
-            data=data,
-            input_length=max_sequence_length,
-            output_length=out_sequence_length,
-        )
+        train_dataset = CharDataset(data=data,input_length=max_sequence_length)
         test_dataset = train_dataset
 
         config.data.num_classes = train_dataset.num_tokens
@@ -225,11 +216,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         with open(data_path, mode="r") as file:
             data = file.read()
 
-        train_dataset = CharDataset(
-            data=data,
-            input_length=max_sequence_length,
-            output_length=out_sequence_length,
-        )
+        train_dataset = CharDataset(data=data,input_length=max_sequence_length)
         test_dataset = train_dataset
 
         config.data.num_classes = train_dataset.num_tokens
@@ -246,7 +233,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
     else:
         pin_memory = False
 
-    trainloader = torch.utils.data.DataLoader(
+    train_loader = torch.utils.data.DataLoader(
         dataset=train_dataset,
         batch_size=batch_size,
         num_workers=num_workers,
@@ -256,7 +243,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         pin_memory=pin_memory,
     )
 
-    testloader = torch.utils.data.DataLoader(
+    test_loader = torch.utils.data.DataLoader(
         dataset=test_dataset,
         batch_size=2 * batch_size,
         num_workers=num_workers,
@@ -266,7 +253,7 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         pin_memory=pin_memory,
     )
 
-    return trainloader, testloader
+    return train_loader, test_loader
 
 
 def load_lexicap() -> str:

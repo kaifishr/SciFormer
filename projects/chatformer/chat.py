@@ -160,7 +160,6 @@ if __name__ == "__main__":
 
     # Get the model
     model = CharacterTransformer(config=config)
-    # model = torch.jit.script(model)
 
     ckpt_dir = config.dirs.weights
     model_name = config.load_model.model_name

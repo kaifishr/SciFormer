@@ -15,18 +15,16 @@ class CharDataset(Dataset):
         data:
         config:
         input_length: Length of input sequence.
-        output_length: Length of output sequence.
         char_to_index:
         index_to_char:
         num_chars:
     """
 
-    def __init__(self, data: str, input_length: int = 1, output_length: int = 1):
+    def __init__(self, data: str, input_length: int = 1):
 
         self.data = data
 
         self.input_sequence_length = input_length
-        self.output_sequence_length = output_length
 
         chars = sorted(list(set(data)))
 
@@ -49,23 +47,22 @@ class CharDataset(Dataset):
 
         data = "The quick brown Fox jumps"
 
-        idx=4 and input_sequence_length=8,
-        output_sequence_length=2 the following block
-        of characters are extracted from the data
+        idx=4 and input_sequence_length=8,the following 
+        block of characters are extracted from the data
         sequence
 
-        char_block = "quick brow"
+        char_block = "quick bro"
 
         which is being encoded as a list of integers:
 
-        encoded_block = [9, 1, 4, 8, 2, 5, 3, 7, 6, 0]
-                         q  u  i  c  k " " b  r  o, w
+        encoded_block = [9, 1, 4, 8, 2, 5, 3, 7, 6]
+                         q  u  i  c  k " " b  r  o
 
         From this list, the following input and target
         is created:
 
         x = [9, 1, 4, 8, 2, 5, 3, 7]
-        y = [6, 0]
+        y = [6]
 
         Args:
             idx: Index to access string stored in data.
