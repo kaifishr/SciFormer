@@ -152,7 +152,6 @@ class Trainer:
                 )
                 running_counter += labels.size(0)
 
-                print(update_step)
                 if config.summary.save_train_stats.every_n_updates > 0:
                     if (
                         update_step % config.summary.save_train_stats.every_n_updates

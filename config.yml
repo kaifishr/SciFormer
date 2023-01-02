@@ -25,12 +25,12 @@ transformer:
   token_embedding:
     is_trainable: true
     # Available encoding schemes: random_normal, sinusoidal
-    encoding: "random_normal" 
+    encoding: "sinusoidal" 
   position_embedding:
     is_activated: true
     is_trainable: true
     # Available encoding schemes: ones, zeros, random_normal, sinusoidal
-    encoding: "random_normal" 
+    encoding: "zeros" 
   transformer_block:
     hidden_expansion: 2
     dropout_prob: 0.05
@@ -43,7 +43,7 @@ transformer:
     is_activated: true
     is_trainable: true
     # Available masks: causal, trainable_additive, trainable_multiplicative 
-    type: "trainable_additive" 
+    type: "causal" 
   classifier:
     param1: None
 
