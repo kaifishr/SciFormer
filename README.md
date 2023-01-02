@@ -45,11 +45,17 @@ This leads to
 $$
 w_{ij} = \frac{\exp(w'_{ij})}{\sum^{k}_{j=1} \exp(w'_{ij})}
 $$
+
 $$
-w_{ij} = \frac{\exp(w'_{ij})}{\sum_{j=1} \exp(w'_{ij})}
+w_{ij} = \frac{\exp(w'_{ij})}{\sum_{j} \exp(w'_{ij})}
 $$
+
 $$
 w_{ij} = \frac{\exp(w'_{ij})}{\sum \exp(w'_{ij})}
+$$
+
+$$
+\sum_{j} \exp(w'_{ij})
 $$
 
 It should also be noticed, that, so far, no trainable parameters have been used in the operations outlined above.
