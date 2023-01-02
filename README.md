@@ -3,7 +3,7 @@
 Minimal multi-head self-attention transformer architecture with experimental features implemented in PyTorch. Probably useful for rapid prototyping and educational purposes.
 
 <p align="center">
-    <img src="./docs/" height="320">
+    <img src="./docs/images/sciformer.jpeg" height="320">
 </p>
 
 # Transformer Network
@@ -44,9 +44,6 @@ This leads to
 
 $$w_{ij} = \frac{\exp(w'_{ij})}{\sum_{j=1}^k \exp(w'_{ij})}$$
 
-> TODO: $$w_{ij} = \frac{w'_{ij} - \mu_{w[i,:]}}{\sigma_{w[i,:]}}$$
-> ES inspired.
-
 It should also be noticed, that, so far, no trainable parameters have been used in the operations outlined above.
 
 The basic version of self-attention can also be expressed in matrix notation
@@ -62,8 +59,6 @@ As the self-attention mechanism at its core is a weighted sum over the input vec
 $$\text{permutation}(\text{selfAttention}(\mathbf{x})) = \text{selfAttention}(\text{permutation}(\mathbf{x}))$$
 
 In which order the sequence is to be understood, can be achieved by encoding the sequential structure into the token embeddings using positional embeddings.
-
-> TODO: Use positional embedding in each attention block?
 
 
 ### Attention as a Soft Dictionary
@@ -170,26 +165,6 @@ Finally, a `Classifier` module takes the output of the last `TransformerBlock` a
 
 ## Attention Mask 
 
-
-# Random search
-
-A simple random search method has been implemented to explore the model in more depth and to better understand the interplay of the model's various hyperparameters such as
-
-- sequence length
-- token embedding dimensions
-- number of attention heads
-- number of transformer blocks
-- hidden expansion
-- dropout probability
-- use of bias in self-attention module
-- learning rate
-
-![Random search](./docs/images/hparams_random_search.png)
-
-
-# Discussion
-
-Running a few experiments showed that the model's test accuracy improves with an increased number of attention heads, head dimension, and sequence length (in that order). Adding more attention blocks always resulted in higher test accuracy.
 
 # TODO:
 

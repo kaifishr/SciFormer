@@ -153,8 +153,9 @@ class PositionEmbedding(nn.Module):
         embedding_dim = n_heads * head_dim
 
         self.pos_emb = config.transformer.position_embedding
+        self.is_activated = config.transformer.position_embedding.is_activated
 
-        if self.pos_emb.is_activated:
+        if self.is_activated:
             requires_grad = True if self.pos_emb.is_trainable else False
             size = (max_sequence_length, embedding_dim)
 
@@ -190,7 +191,7 @@ class PositionEmbedding(nn.Module):
         return encoding
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if self.pos_emb.is_activated:
+        if self.is_activated:
             # pos = torch.arange(0, x.size(1), dtype=torch.long, device=x.device)#.unsqueeze(0)
             # print(f"{self.embedding[pos].shape = }")
             # print(f"{self.embedding[:x.size(1)].shape = }")
@@ -211,13 +212,13 @@ class Mask(nn.Module):
         super().__init__()
 
         self.cfg_mask = config.transformer.mask
+        self.is_activated = config.transformer.mask.is_activated
 
-        if self.cfg_mask.is_activated:
+        if self.is_activated:
             self.max_sequence_length = config.transformer.max_sequence_length
             size = (self.max_sequence_length, self.max_sequence_length)
 
-            # self.mask = self._install_mask(config)
-            mask_type = self.cfg_mask.type
+            mask_type = config.transformer.mask.type
 
             # Create masks.
             if mask_type == "trainable_additive":
@@ -264,7 +265,7 @@ class Mask(nn.Module):
         return x
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        if self.cfg_mask.is_activated:
+        if self.is_activated:
             x = self._apply_mask(x)
         return x
 
@@ -324,10 +325,6 @@ class MultiHeadSelfAttention(nn.Module):
         out = torch.einsum("bqhd,bkhd->bhqk", [queries, keys]) / embedding_dim**0.5
 
         out = self.mask(out)
-        # if self.use_mask:
-        #     # out = self.mask + out
-        #     # out = self.mask * out
-        #     out.masked_fill_(self.mask == 0, float("-inf"))
 
         out = F.softmax(out, dim=-1)
         out = self.dropout(out)
@@ -373,6 +370,61 @@ class TransformerBlock(nn.Module):
         """Forward method."""
         x = x + self.attention(self.layer_norm_1(x))
         x = x + self.mlp(self.layer_norm_2(x))
+        return x
+
+
+class SwapAxes(nn.Module):
+    def __init__(self, axis0: int, axis1):
+        super().__init__()
+        self.axis0 = axis0
+        self.axis1 = axis1
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return torch.swapaxes(x, axis0=self.axis0, axis1=self.axis1)
+
+
+class TokenClassifier(nn.Module):
+    """Classifier for next token prediction."""
+
+    def __init__(self, config: Config) -> None:
+        """Initializes Classifier class."""
+        super().__init__()
+
+        cfg_attention = config.transformer.self_attention
+        embedding_dim = cfg_attention.n_heads * cfg_attention.head_dim
+        num_classes = config.data.num_tokens
+        self.classifier = nn.Linear(embedding_dim, num_classes, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.classifier(x)
+
+
+class SequenceClassifier(nn.Module):
+    """Classifier for next sequence prediction."""
+
+    def __init__(self, config: Config) -> None:
+        """Initializes Classifier class."""
+        super().__init__()
+
+        max_sequence_length = config.transformer.max_sequence_length
+        out_sequence_length = config.transformer.out_sequence_length
+        num_heads = config.transformer.self_attention.n_heads
+        head_dim = config.transformer.self_attention.head_dim
+        embedding_dim = num_heads * head_dim
+        num_classes = config.data.num_tokens
+
+        self.classifier = nn.Sequential(
+            nn.LayerNorm(embedding_dim),
+            SwapAxes(axis0=-2, axis1=-1),
+            nn.Linear(
+                in_features=max_sequence_length, out_features=out_sequence_length
+            ),
+            SwapAxes(axis0=-2, axis1=-1),
+            nn.Linear(in_features=embedding_dim, out_features=num_classes),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.classifier(x)
         return x
 
 

@@ -2,13 +2,19 @@
 
 from src.config.config import init_config
 from src.data.dataloader import get_dataloader
-from src.modules.model import ImageTransformer, CharacterTransformer
-from src.random_search.random_search import create_random_config_
+from src.modules.model import (
+    ImageTransformer, 
+    CharacterTransformer
+)
 from src.trainer.trainer import Trainer
-from src.utils.tools import set_random_seed, load_checkpoint, count_model_parameters
+from src.utils.tools import (
+    set_random_seed, 
+    load_checkpoint, 
+    count_model_parameters
+)
 
 
-def experiment_long_run():
+def experiment_image():
 
     # Get configuration file
     config = init_config(file_path="config.yml")
@@ -25,37 +31,8 @@ def experiment_long_run():
     model.to(config.trainer.device)
 
     print(config)
-    trainer(model=model, dataloader=dataloader, config=config)
-
-    print("Experiment finished.")
-
-
-def experiment_random_search():
-
-    n_runs = 1000
-    n_epochs = 10
-
-    # Get configuration file
-    config = init_config(file_path="config.yml")
-    config.tag = "random_search"
-    config.trainer.n_epochs = n_epochs
-
-    for _ in range(n_runs):
-
-        create_random_config_(config)
-        print(config)
-
-        # Seed random number generator
-        set_random_seed(seed=config.random_seed)
-
-        # Get dataloader
-        dataloader = get_dataloader(config=config)
-
-        # Get the model
-        model = ImageTransformer(config=config)
-        model.to(config.trainer.device)
-
-        trainer(model=model, dataloader=dataloader, config=config)
+    trainer = Trainer(model=model, dataloader=dataloader, config=config)
+    trainer.run()
 
     print("Experiment finished.")
 
@@ -92,51 +69,8 @@ def experiment_text():
     print("Experiment finished.")
 
 
-def experiment_head_dim():
-
-    n_heads_list = [64, 16, 4]
-    head_dims = [4, 16, 64]
-
-    for n_heads, head_dim in zip(n_heads_list, head_dims):
-
-        # Get configuration file.
-        config = init_config(file_path="config.yml")
-        config.tag = f"h{n_heads}d{head_dim}"
-        config.transformer.self_attention.n_heads = n_heads
-        config.transformer.self_attention.head_dim = head_dim
-
-        # Seed random number generator.
-        set_random_seed(seed=config.random_seed)
-
-        # Get dataloader.
-        dataloader = get_dataloader(config=config)
-
-        # Get the model.
-        model = CharacterTransformer(config=config)
-        count_model_parameters(model=model)
-
-        # Load pre-trained model.
-        if config.load_model.is_activated:
-            load_checkpoint(
-                model=model,
-                ckpt_dir=config.dirs.weights,
-                model_name=config.load_model.model_name,
-            )
-
-        model.to(config.trainer.device)
-
-        print(config)
-        trainer = Trainer(model=model, dataloader=dataloader, config=config)
-        trainer.run()
-
-        print("Experiment finished.")
-
-
 def main():
-    # experiment_long_run()
-    # experiment_random_search()
     experiment_text()
-    # experiment_head_dim()
 
 
 if __name__ == "__main__":

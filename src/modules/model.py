@@ -10,6 +10,8 @@ from .module import (
     PositionEmbedding,
     TransformerBlock,
     Classifier,
+    SequenceClassifier,
+    TokenClassifier
 )
 
 from src.config.config import Config
@@ -47,61 +49,6 @@ class ImageTransformer(nn.Module):
         x = self.image_to_sequence(x)
         x = self.position_embedding(x)
         x = self.transformer_blocks(x)
-        x = self.classifier(x)
-        return x
-
-
-class SwapAxes(nn.Module):
-    def __init__(self, axis0: int, axis1):
-        super().__init__()
-        self.axis0 = axis0
-        self.axis1 = axis1
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return torch.swapaxes(x, axis0=self.axis0, axis1=self.axis1)
-
-
-class TokenClassifier(nn.Module):
-    """Classifier for next token prediction."""
-
-    def __init__(self, config: Config) -> None:
-        """Initializes Classifier class."""
-        super().__init__()
-
-        cfg_attention = config.transformer.self_attention
-        embedding_dim = cfg_attention.n_heads * cfg_attention.head_dim
-        num_classes = config.data.num_tokens
-        self.classifier = nn.Linear(embedding_dim, num_classes, bias=False)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.classifier(x)
-
-
-class SequenceClassifier(nn.Module):
-    """Classifier for next sequence prediction."""
-
-    def __init__(self, config: Config) -> None:
-        """Initializes Classifier class."""
-        super().__init__()
-
-        max_sequence_length = config.transformer.max_sequence_length
-        out_sequence_length = config.transformer.out_sequence_length
-        num_heads = config.transformer.self_attention.n_heads
-        head_dim = config.transformer.self_attention.head_dim
-        embedding_dim = num_heads * head_dim
-        num_classes = config.data.num_tokens
-
-        self.classifier = nn.Sequential(
-            nn.LayerNorm(embedding_dim),
-            SwapAxes(axis0=-2, axis1=-1),
-            nn.Linear(
-                in_features=max_sequence_length, out_features=out_sequence_length
-            ),
-            SwapAxes(axis0=-2, axis1=-1),
-            nn.Linear(in_features=embedding_dim, out_features=num_classes),
-        )
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.classifier(x)
         return x
 

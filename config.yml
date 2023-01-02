@@ -16,9 +16,9 @@ dataloader:
 # Model #
 #########
 transformer:
-  n_blocks: 8
+  n_blocks: 4
   max_sequence_length: 128
-  out_sequence_length: 64
+  out_sequence_length: 16
   image_to_sequence:
     patch_size: 1
     # sequence_length: 64  # TODO: Move sequence_length here for image transformer.
@@ -33,17 +33,17 @@ transformer:
     encoding: "zeros" 
   transformer_block:
     hidden_expansion: 2
-    dropout_prob: 0.05
+    dropout_prob: 0
   self_attention:
     n_heads: 1
     head_dim: 512  # embedding dimension is n_heads * head_dim
-    dropout_prob: 0.05
+    dropout_prob: 0
     use_bias: True 
   mask:
     is_activated: true
     is_trainable: true
     # Available masks: causal, trainable_additive, trainable_multiplicative 
-    type: "causal" 
+    type: "trainable_additive" 
   classifier:
     param1: None
 
@@ -53,8 +53,8 @@ transformer:
 trainer:
   device: "gpu"   # gpu, cpu
   num_update_steps: 100000
-  batch_size: 64
-  weight_decay: 1.0e-5
+  batch_size: 128
+  weight_decay: 1.0e-6
   learning_rate:
     value: 3.0e-4
     step_size: 100000
