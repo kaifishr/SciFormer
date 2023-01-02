@@ -16,16 +16,16 @@ dataloader:
 # Model #
 #########
 transformer:
-  n_blocks: 4
+  n_blocks: 8
   max_sequence_length: 128
-  out_sequence_length: 16
+  out_sequence_length: 128
   image_to_sequence:
     patch_size: 1
     # sequence_length: 64  # TODO: Move sequence_length here for image transformer.
   token_embedding:
     is_trainable: true
     # Available encoding schemes: random_normal, sinusoidal
-    encoding: "sinusoidal" 
+    encoding: "random_normal" 
   position_embedding:
     is_activated: true
     is_trainable: true
@@ -35,10 +35,10 @@ transformer:
     hidden_expansion: 2
     dropout_prob: 0
   self_attention:
-    n_heads: 1
-    head_dim: 512  # embedding dimension is n_heads * head_dim
+    n_heads: 4
+    head_dim: 128  # embedding dimension is n_heads * head_dim
     dropout_prob: 0
-    use_bias: True 
+    use_bias: true
   mask:
     is_activated: true
     is_trainable: true
@@ -53,7 +53,7 @@ transformer:
 trainer:
   device: "gpu"   # gpu, cpu
   num_update_steps: 100000
-  batch_size: 128
+  batch_size: 64
   weight_decay: 1.0e-6
   learning_rate:
     value: 3.0e-4
