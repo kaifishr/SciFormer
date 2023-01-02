@@ -97,30 +97,19 @@ def set_attribute(model: torch.nn.Module, attribute: str, value) -> None:
             setattr(module, attribute, value)
 
 
-def count_model_parameters(
-    model: nn.Module, is_trainable: bool = True, verbose: bool = True
-) -> int:
+def count_model_parameters(model: nn.Module, is_trainable: bool = True) -> None:
     """Counts model parameters.
 
     Args:
         model: PyTorch model.
         is_trainable: Count only trainable parameters if true.
-        verbose: Print number of trainable parameters.
-
-    Returns:
-        Number of model parameters.
 
     """
     n_params = sum(
         p.numel() for p in model.parameters() if p.requires_grad is is_trainable
     )
 
-    if verbose:
-        print(
-            f"Number of trainable parameters: {'.'.join(wrap(str(n_params)[::-1], 3))[::-1]}."
-        )
-
-    return n_params
+    print(f"Number of parameters: {n_params/1e6:.3f} M")
 
 
 def set_random_seed(seed: int = 0, is_cuda_deterministic: bool = False) -> None:

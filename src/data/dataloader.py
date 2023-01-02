@@ -31,6 +31,8 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
     dataset = config.dataloader.dataset
     num_workers = config.dataloader.num_workers
     batch_size = config.trainer.batch_size
+    max_sequence_length = config.transformer.max_sequence_length
+    out_sequence_length = config.transformer.out_sequence_length
 
     if dataset == "imagewoof":
 
@@ -189,8 +191,12 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
         with open(data_path, mode="r") as file:
             data = file.read()
 
-        train_dataset = CharDataset(data=data, config=config)
-        test_dataset = CharDataset(data="", config=config)
+        train_dataset = CharDataset(
+            data=data,
+            input_length=max_sequence_length,
+            output_length=out_sequence_length,
+        )
+        test_dataset = train_dataset
 
         config.data.num_classes = train_dataset.num_tokens
         config.data.num_tokens = train_dataset.num_tokens
@@ -199,15 +205,35 @@ def get_dataloader(config: Config) -> tuple[DataLoader, DataLoader]:
 
         data = load_lexicap()
 
-        train_dataset = CharDataset(data=data, config=config)
-        test_dataset = CharDataset(data="", config=config)
+        train_dataset = CharDataset(
+            data=data,
+            input_length=max_sequence_length,
+            output_length=out_sequence_length,
+        )
+        test_dataset = train_dataset
 
         config.data.num_classes = train_dataset.num_tokens
         config.data.num_tokens = train_dataset.num_tokens
 
-    elif dataset == "enwik":
-        # dataset_url = "http://mattmahoney.net/dc/enwik8.zip"
-        raise NotImplementedError("Dataloader for {dataset} dataset not implemented.")
+    elif dataset == "books":
+
+        # Create folder for data.
+        data_dir = "data/books/"
+        pathlib.Path(data_dir).mkdir(parents=True, exist_ok=True)
+
+        data_path = data_dir + "/books.txt"
+        with open(data_path, mode="r") as file:
+            data = file.read()
+
+        train_dataset = CharDataset(
+            data=data,
+            input_length=max_sequence_length,
+            output_length=out_sequence_length,
+        )
+        test_dataset = train_dataset
+
+        config.data.num_classes = train_dataset.num_tokens
+        config.data.num_tokens = train_dataset.num_tokens
 
     else:
         raise NotImplementedError(f"Dataloader for {dataset} not implemented.")

@@ -1,3 +1,4 @@
+import pathlib
 import datetime
 import os
 import time
@@ -55,6 +56,11 @@ class Trainer:
 
         self.writer = SummaryWriter(log_dir=log_dir)
 
+        # Save config file.
+        file_path = pathlib.Path(self.writer.log_dir) / "config.txt"
+        with open(file_path, "w") as file:
+            file.write(self.config.__str__())
+
         train_loader, test_loader = dataloader
 
         # Add graph of model to Tensorboard.
@@ -72,21 +78,17 @@ class Trainer:
                 dataloader=test_loader, writer=self.writer, tag="test", global_step=0
             )
 
-        learning_rate = config.trainer.learning_rate
+        learning_rate = config.trainer.learning_rate.value
         weight_decay = config.trainer.weight_decay
         self.optimizer = torch.optim.Adam(
             model.parameters(), lr=learning_rate, weight_decay=weight_decay
         )
 
-        step_size = config.trainer.lr_step_size
-        gamma = config.trainer.lr_gamma
+        step_size = config.trainer.learning_rate.step_size
+        gamma = config.trainer.learning_rate.gamma
         self.criterion = torch.nn.CrossEntropyLoss()
-        # self.scheduler = torch.optim.lr_scheduler.StepLR(
-        #     self.optimizer, step_size=step_size, gamma=gamma
-        # )
-        max_learning_rate = 0.001
-        self.scheduler = torch.optim.lr_scheduler.OneCycleLR(
-            self.optimizer, max_lr=max_learning_rate, total_steps=self.num_update_steps
+        self.scheduler = torch.optim.lr_scheduler.StepLR(
+            self.optimizer, step_size=step_size, gamma=gamma
         )
 
     def run(self):
@@ -102,8 +104,7 @@ class Trainer:
 
         train_loader, test_loader = self.dataloader
 
-        update_step = 0  # 60000  # num_updates, num_batch_updates?
-        # self.scheduler.last_epoch = update_step
+        update_step = 0
 
         while update_step < self.num_update_steps:
 
@@ -129,15 +130,16 @@ class Trainer:
                 # TODO: Move reshaping to model.
                 outputs = outputs.view(-1, outputs.size(-1))
                 labels = labels.view(-1)
+
                 loss = criterion(outputs, labels)
 
                 # Backpropagation
                 loss.backward()
 
                 # Clip gradients
-                torch.nn.utils.clip_grad_norm_(
-                    model.parameters(), config.trainer.grad_norm_clip
-                )
+                if config.trainer.gradient_clipping.is_activated:
+                    max_norm = config.trainer.gradient_clipping.max_norm
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
 
                 # Gradient descent
                 optimizer.step()

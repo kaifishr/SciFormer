@@ -31,7 +31,6 @@ class ImageTransformer(nn.Module):
 
         self.classifier = Classifier(config)
 
-        self._count_model_parameters()
         self.apply(self._init_weights)
 
     def _init_weights(self, module: nn.Module):
@@ -44,15 +43,65 @@ class ImageTransformer(nn.Module):
             torch.nn.init.zeros_(module.bias)
             torch.nn.init.ones_(module.weight)
 
-    def _count_model_parameters(self) -> None:
-        """Computes number of model parameters."""
-        n_params = [params.numel() for params in self.parameters()]
-        print(f"Number of parameters: {sum(n_params)/1e6:.3f} M")
-
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.image_to_sequence(x)
         x = self.position_embedding(x)
         x = self.transformer_blocks(x)
+        x = self.classifier(x)
+        return x
+
+
+class SwapAxes(nn.Module):
+    def __init__(self, axis0: int, axis1):
+        super().__init__()
+        self.axis0 = axis0
+        self.axis1 = axis1
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return torch.swapaxes(x, axis0=self.axis0, axis1=self.axis1)
+
+
+class TokenClassifier(nn.Module):
+    """Classifier for next token prediction."""
+
+    def __init__(self, config: Config) -> None:
+        """Initializes Classifier class."""
+        super().__init__()
+
+        cfg_attention = config.transformer.self_attention
+        embedding_dim = cfg_attention.n_heads * cfg_attention.head_dim
+        num_classes = config.data.num_tokens
+        self.classifier = nn.Linear(embedding_dim, num_classes, bias=False)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.classifier(x)
+
+
+class SequenceClassifier(nn.Module):
+    """Classifier for next sequence prediction."""
+
+    def __init__(self, config: Config) -> None:
+        """Initializes Classifier class."""
+        super().__init__()
+
+        max_sequence_length = config.transformer.max_sequence_length
+        out_sequence_length = config.transformer.out_sequence_length
+        num_heads = config.transformer.self_attention.n_heads
+        head_dim = config.transformer.self_attention.head_dim
+        embedding_dim = num_heads * head_dim
+        num_classes = config.data.num_tokens
+
+        self.classifier = nn.Sequential(
+            nn.LayerNorm(embedding_dim),
+            SwapAxes(axis0=-2, axis1=-1),
+            nn.Linear(
+                in_features=max_sequence_length, out_features=out_sequence_length
+            ),
+            SwapAxes(axis0=-2, axis1=-1),
+            nn.Linear(in_features=embedding_dim, out_features=num_classes),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.classifier(x)
         return x
 
@@ -72,15 +121,8 @@ class CharacterTransformer(nn.Module):
         blocks = [TransformerBlock(config) for _ in range(n_blocks)]
         self.transformer_blocks = nn.Sequential(*blocks)
 
-        #####
-        # self.classifier = Classifier(config)
-        cfg_attention = config.transformer.self_attention
-        embedding_dim = cfg_attention.n_heads * cfg_attention.head_dim
-        num_tokens = config.data.num_tokens
-        self.classifier = nn.Linear(embedding_dim, num_tokens, bias=False)
-        #####
+        self.classifier = SequenceClassifier(config=config)
 
-        self._count_model_parameters()
         self.apply(self._init_weights)
 
     def _init_weights(self, module: nn.Module):
@@ -92,11 +134,6 @@ class CharacterTransformer(nn.Module):
         elif isinstance(module, nn.LayerNorm):
             torch.nn.init.zeros_(module.bias)
             torch.nn.init.ones_(module.weight)
-
-    def _count_model_parameters(self) -> None:
-        """Computes number of model parameters."""
-        n_params = [params.numel() for params in self.parameters()]
-        print(f"Number of parameters: {sum(n_params)/1e6:.3f} M")
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # TODO: Assert that maximum sequence length is not exceeded.

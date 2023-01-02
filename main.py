@@ -5,7 +5,7 @@ from src.data.dataloader import get_dataloader
 from src.modules.model import ImageTransformer, CharacterTransformer
 from src.random_search.random_search import create_random_config_
 from src.trainer.trainer import Trainer
-from src.utils.tools import set_random_seed, load_checkpoint
+from src.utils.tools import set_random_seed, load_checkpoint, count_model_parameters
 
 
 def experiment_long_run():
@@ -21,6 +21,7 @@ def experiment_long_run():
 
     # Get the model
     model = ImageTransformer(config=config)
+    count_model_parameters(model=model)
     model.to(config.trainer.device)
 
     print(config)
@@ -72,6 +73,7 @@ def experiment_text():
 
     # Get the model.
     model = CharacterTransformer(config=config)
+    count_model_parameters(model=model)
 
     # Load pre-trained model.
     if config.load_model.is_activated:
@@ -111,6 +113,7 @@ def experiment_head_dim():
 
         # Get the model.
         model = CharacterTransformer(config=config)
+        count_model_parameters(model=model)
 
         # Load pre-trained model.
         if config.load_model.is_activated:
