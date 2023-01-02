@@ -42,9 +42,11 @@ $$w'_{ij} = \frac{\mathbf{x}_i^\top\mathbf{x}_j}{\sqrt{k}}$$
 
 This leads to
 
+```math
 $$
 w_{ij} = \frac{\exp(w'_{ij})}{\sum^{k}_{j=1} \exp(w'_{ij})}
 $$
+```
 
 $$
 w_{ij} = \frac{\exp(w'_{ij})}{\sum_{j} \exp(w'_{ij})}
