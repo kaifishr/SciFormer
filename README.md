@@ -104,7 +104,8 @@ $$X = \{X_{[:,0:k/h]}, \cdots, X_{[:,k-k/h:k]}\}$$
 
 Autoregressive models predict the next token in a sequence such as, for example, a letter or a word. For this to work, the attention mechanism needs to be causal. This is achieved by removing the forward connections in the self-attention operations which is also known as masking. To remove the forward connections, we can add a mask of minus infinity to the entries above the diagonal. Thus, we add mask to the weight matrix $W'$ and get
 
-$$W' =
+$$
+W' =
 \begin{pmatrix}
 w_{11}  & \cdots & w_{1k} \\
 \vdots & \ddots & \vdots \\
